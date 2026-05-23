@@ -24,7 +24,6 @@ class DosenController extends Controller
             'studyProgram','educations','researches','communityServices','publications'
         ]);
 
-        // ✅ FIX: tambah $stats sesuai blade
         $stats = [
             'pendidikan' => $lecturer->educations->count(),
             'penelitian' => $lecturer->researches->count(),
@@ -32,7 +31,39 @@ class DosenController extends Controller
             'publikasi'  => $lecturer->publications->count(),
         ];
 
-        return view('dosen.index', compact('lecturer', 'stats'));
+        // ── Data chart dashboard: 5 tahun terakhir ──
+        $currentYear = (int) date('Y');
+        $chartYears  = range($currentYear - 4, $currentYear);
+
+        $chartData = [
+            'years'    => array_map('strval', $chartYears),
+            'penelitian' => collect($chartYears)->map(
+                fn($y) => $lecturer->researches->where('year', $y)->count()
+            )->values()->toArray(),
+            'pengabdian' => collect($chartYears)->map(
+                fn($y) => $lecturer->communityServices->where('year', $y)->count()
+            )->values()->toArray(),
+            'publikasi' => collect($chartYears)->map(
+                fn($y) => $lecturer->publications->where('year', $y)->count()
+            )->values()->toArray(),
+        ];
+
+        // ── Aktivitas terbaru (5 item) ──
+        $recentActivities = collect()
+            ->merge($lecturer->researches->map(fn($r) => [
+                'type' => 'Penelitian', 'title' => $r->title, 'year' => $r->year, 'color' => 'blue'
+            ]))
+            ->merge($lecturer->communityServices->map(fn($s) => [
+                'type' => 'Pengabdian', 'title' => $s->title, 'year' => $s->year, 'color' => 'emerald'
+            ]))
+            ->merge($lecturer->publications->map(fn($p) => [
+                'type' => 'Publikasi', 'title' => $p->title, 'year' => $p->year, 'color' => 'violet'
+            ]))
+            ->sortByDesc('year')
+            ->take(5)
+            ->values();
+
+        return view('dosen.index', compact('lecturer', 'stats', 'chartData', 'recentActivities'));
     }
 
     // ─── PROFIL ──────────────────────────────────────────────
@@ -46,12 +77,14 @@ class DosenController extends Controller
     {
         $lecturer = $this->getLecturer();
         $request->validate([
-            'nidn'      => 'nullable|string|max:20',
-            'expertise' => 'nullable|string|max:500',
-            'photo'     => 'nullable|image|max:2048',
+            'nidn'               => 'nullable|string|max:20',
+            'jabatan_fungsional' => 'nullable|string|in:Asisten Ahli,Lektor,Lektor Kepala,Guru Besar / Profesor',
+            'expertise'          => 'nullable|string|max:500',
+            'photo'              => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only(['nidn', 'expertise']);
+        $data = $request->only(['nidn', 'jabatan_fungsional', 'expertise']);
+        $data['is_public'] = $request->boolean('is_public');
 
         if ($request->hasFile('photo')) {
             if ($lecturer->photo) Storage::disk('public')->delete($lecturer->photo);
@@ -59,6 +92,12 @@ class DosenController extends Controller
         }
 
         $lecturer->update($data);
+
+        // Update nama user jika berubah
+        if ($request->filled('name') && $request->name !== auth()->user()->name) {
+            auth()->user()->update(['name' => $request->name]);
+        }
+
         return back()->with('success', 'Profil berhasil diperbarui.');
     }
 

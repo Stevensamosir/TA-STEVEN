@@ -40,13 +40,14 @@ class AdminController extends Controller
     public function storeDosen(Request $request)
     {
         $request->validate([
-            'name'             => 'required|string|max:255',
-            'email'            => 'required|email|unique:users',
-            'password'         => 'required|min:8',
-            'role'             => 'required|in:dosen,kaprodi,dekan',
-            'study_program_id' => 'required|exists:study_programs,id',
-            'nidn'             => 'nullable|string|max:20',
-            'expertise'        => 'nullable|string',
+            'name'               => 'required|string|max:255',
+            'email'              => 'required|email|unique:users',
+            'password'           => 'required|min:8',
+            'role'               => 'required|in:dosen,kaprodi,dekan',
+            'study_program_id'   => 'required|exists:study_programs,id',
+            'nidn'               => 'nullable|string|max:20',
+            'jabatan_fungsional' => 'nullable|string|in:Asisten Ahli,Lektor,Lektor Kepala,Guru Besar / Profesor',
+            'expertise'          => 'nullable|string',
         ]);
 
         // ✅ CONSTRAINT: Dekan maksimal 1 aktif
@@ -68,11 +69,12 @@ class AdminController extends Controller
         ]);
 
         Lecturer::create([
-            'user_id'          => $user->id,
-            'study_program_id' => $request->study_program_id,
-            'nidn'             => $request->nidn,
-            'expertise'        => $request->expertise,
-            'is_public'        => true,
+            'user_id'            => $user->id,
+            'study_program_id'   => $request->study_program_id,
+            'nidn'               => $request->nidn,
+            'jabatan_fungsional' => $request->jabatan_fungsional,
+            'expertise'          => $request->expertise,
+            'is_public'          => true,
         ]);
 
         return redirect()->route('admin.dosen')->with('success', 'Akun dosen berhasil dibuat.');
@@ -92,12 +94,13 @@ class AdminController extends Controller
         $lecturer = Lecturer::with('user')->findOrFail($id);
 
         $request->validate([
-            'name'             => 'required|string|max:255',
-            'email'            => 'required|email|unique:users,email,'.$lecturer->user->id,
-            'role'             => 'required|in:dosen,kaprodi,dekan',
-            'study_program_id' => 'required|exists:study_programs,id',
-            'nidn'             => 'nullable|string|max:20',
-            'expertise'        => 'nullable|string',
+            'name'               => 'required|string|max:255',
+            'email'              => 'required|email|unique:users,email,'.$lecturer->user->id,
+            'role'               => 'required|in:dosen,kaprodi,dekan',
+            'study_program_id'   => 'required|exists:study_programs,id',
+            'nidn'               => 'nullable|string|max:20',
+            'jabatan_fungsional' => 'nullable|string|in:Asisten Ahli,Lektor,Lektor Kepala,Guru Besar / Profesor',
+            'expertise'          => 'nullable|string',
         ]);
 
         // ✅ CONSTRAINT: Dekan maksimal 1 aktif (saat ubah role ke dekan)
@@ -117,9 +120,10 @@ class AdminController extends Controller
             'role'  => $request->role,
         ]);
         $lecturer->update([
-            'study_program_id' => $request->study_program_id,
-            'nidn'             => $request->nidn,
-            'expertise'        => $request->expertise,
+            'study_program_id'   => $request->study_program_id,
+            'nidn'               => $request->nidn,
+            'jabatan_fungsional' => $request->jabatan_fungsional,
+            'expertise'          => $request->expertise,
         ]);
 
         return redirect()->route('admin.dosen')->with('success', 'Data dosen berhasil diperbarui.');
@@ -151,7 +155,7 @@ class AdminController extends Controller
     public function updateProfilDosen(Request $request, $id)
     {
         $lecturer = Lecturer::findOrFail($id);
-        $lecturer->update($request->only(['nidn', 'expertise', 'is_public']));
+        $lecturer->update($request->only(['nidn', 'jabatan_fungsional', 'expertise', 'is_public']));
         return back()->with('success', 'Profil dosen berhasil diperbarui.');
     }
 

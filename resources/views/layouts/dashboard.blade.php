@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard') — Sistem Profil Dosen Vokasi</title>
 
-    {{-- ✅ FAVICON: Logo DEL di tab browser --}}
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23003087'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial,sans-serif' font-weight='bold' font-size='13' fill='white'%3EDel%3C/text%3E%3C/svg%3E">
-    <link rel="shortcut icon" href="/favicon.ico">
+    {{-- ✅ FAVICON: Pakai logo asli IT Del --}}
+    <link rel="icon" type="image/png" href="/images/logo-del.png">
+    <link rel="shortcut icon" href="/images/logo-del.png">
     <meta name="theme-color" content="#003087">
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">

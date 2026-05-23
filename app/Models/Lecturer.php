@@ -11,8 +11,22 @@ class Lecturer extends Model
 
     protected $fillable = [
         'user_id', 'study_program_id', 'nidn',
+        'jabatan_fungsional',
         'expertise', 'photo', 'is_public',
     ];
+
+    /**
+     * Pilihan jabatan fungsional akademik dosen (Permendikbud No. 92 Tahun 2014)
+     */
+    public static function jabatanFungsionalOptions(): array
+    {
+        return [
+            'Asisten Ahli',
+            'Lektor',
+            'Lektor Kepala',
+            'Guru Besar / Profesor',
+        ];
+    }
 
     protected $casts = [
         'is_public' => 'boolean',

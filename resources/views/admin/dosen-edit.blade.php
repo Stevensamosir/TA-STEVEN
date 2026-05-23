@@ -37,6 +37,16 @@
                 </div>
             </div>
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Jabatan Fungsional</label>
+                <select name="jabatan_fungsional"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 bg-white">
+                    <option value="">— Pilih (opsional) —</option>
+                    @foreach(App\Models\Lecturer::jabatanFungsionalOptions() as $jf)
+                        <option value="{{ $jf }}" {{ old('jabatan_fungsional', $lecturer->jabatan_fungsional) === $jf ? 'selected' : '' }}>{{ $jf }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Kepakaran</label>
                 <textarea name="expertise" rows="2" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none resize-none">{{ old('expertise', $lecturer->expertise) }}</textarea>
             </div>

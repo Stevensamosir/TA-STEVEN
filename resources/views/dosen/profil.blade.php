@@ -39,6 +39,24 @@
                     placeholder="10 digit NIDN">
             </div>
 
+            <!-- Jabatan Fungsional -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                    Jabatan Fungsional
+                    <span class="text-xs text-gray-400 font-normal ml-1">(Sesuai SK Dikti)</span>
+                </label>
+                <select name="jabatan_fungsional"
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del bg-white">
+                    <option value="">— Pilih Jabatan Fungsional —</option>
+                    @foreach(App\Models\Lecturer::jabatanFungsionalOptions() as $jf)
+                        <option value="{{ $jf }}" {{ old('jabatan_fungsional', $lecturer->jabatan_fungsional) === $jf ? 'selected' : '' }}>
+                            {{ $jf }}
+                        </option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-gray-400 mt-1">Berdasarkan Permendikbud No. 92 Tahun 2014</p>
+            </div>
+
             <!-- Kepakaran -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Kepakaran / Bidang Keahlian</label>
