@@ -4,15 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard') — Sistem Profil Dosen Vokasi</title>
+
+    {{-- ✅ FAVICON: Logo DEL di tab browser --}}
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23003087'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial,sans-serif' font-weight='bold' font-size='13' fill='white'%3EDel%3C/text%3E%3C/svg%3E">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="theme-color" content="#003087">
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        del: { DEFAULT:'#003087', light:'#0051c3', dark:'#001f5c', 50:'#eff6ff' }
-                    },
+                    colors: { del: { DEFAULT:'#003087', light:'#0051c3', dark:'#001f5c', 50:'#eff6ff' } },
                     fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
                 }
             }
@@ -20,8 +24,14 @@
     </script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .sidebar-link { @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-del transition-all; }
-        .sidebar-link.active { @apply bg-blue-50 text-del font-semibold; }
+        .sidebar-link {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.5rem 0.75rem; border-radius: 0.5rem;
+            font-size: 0.875rem; font-weight: 500; color: #4b5563;
+            transition: all 0.15s; text-decoration: none;
+        }
+        .sidebar-link:hover { background-color: #eff6ff; color: #003087; }
+        .sidebar-link.active { background-color: #eff6ff; color: #003087; font-weight: 600; }
     </style>
     @stack('styles')
 </head>
@@ -30,10 +40,13 @@
 <div class="flex h-screen overflow-hidden">
     <!-- SIDEBAR -->
     <aside class="w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm flex-shrink-0">
-        <!-- Logo -->
+        <!-- ✅ Logo dengan fallback SVG -->
         <div class="p-5 border-b border-gray-100">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-del rounded-lg flex items-center justify-center">
+                <img src="/images/logo-del.png" alt="IT Del" class="h-8 w-auto"
+                     onerror="this.style.display='none'; document.getElementById('sidebar-logo-svg').style.display='flex'">
+                <div id="sidebar-logo-svg" style="display:none"
+                     class="w-8 h-8 bg-del rounded-md items-center justify-center flex-shrink-0">
                     <span class="text-white font-bold text-xs">Del</span>
                 </div>
                 <div>
@@ -65,15 +78,19 @@
             @if(in_array(auth()->user()->role, ['dekan','kaprodi']))
             <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 pt-2 pb-1">Admin</div>
             <a href="{{ route('admin.index') }}" class="sidebar-link {{ request()->routeIs('admin.index') ? 'active' : '' }}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 Dashboard Admin
             </a>
             <a href="{{ route('admin.dosen') }}" class="sidebar-link {{ request()->routeIs('admin.dosen*') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
                 Kelola Dosen
             </a>
+            <a href="{{ route('admin.prodi') }}" class="sidebar-link {{ request()->routeIs('admin.prodi*') ? 'active' : '' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/>
+                </svg>Kelola Prodi</a>
             <a href="{{ route('admin.hierarki') }}" class="sidebar-link {{ request()->routeIs('admin.hierarki*') ? 'active' : '' }}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
                 Hierarki Kaprodi
             </a>
             <a href="{{ route('admin.internal') }}" class="sidebar-link {{ request()->routeIs('admin.internal') ? 'active' : '' }}">
@@ -128,7 +145,6 @@
 
     <!-- MAIN CONTENT -->
     <div class="flex-1 overflow-y-auto">
-        <!-- Top Bar -->
         <header class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
             <h1 class="text-lg font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h1>
             <a href="{{ route('home') }}" class="text-sm text-del hover:underline flex items-center gap-1">
@@ -137,7 +153,6 @@
             </a>
         </header>
 
-        <!-- Flash Messages -->
         <div class="px-6 pt-4">
             @if(session('success'))
                 <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm mb-4 flex items-center gap-2">
@@ -148,7 +163,7 @@
             @if($errors->any())
                 <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm mb-4">
                     @foreach($errors->all() as $error)
-                        <div>{{ $error }}</div>
+                        <div>• {{ $error }}</div>
                     @endforeach
                 </div>
             @endif

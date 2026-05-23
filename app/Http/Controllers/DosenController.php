@@ -1,11 +1,10 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Lecturer;
 use App\Models\Education;
 use App\Models\Research;
 use App\Models\CommunityService;
@@ -15,41 +14,44 @@ class DosenController extends Controller
 {
     private function getLecturer()
     {
-        return Auth::user()->lecturer;
+        return auth()->user()->lecturer;
     }
 
-    // ======================== DASHBOARD ========================
+    // ─── DASHBOARD ──────────────────────────────────────────
     public function index()
     {
-        $lecturer = $this->getLecturer();
+        $lecturer = $this->getLecturer()->load([
+            'studyProgram','educations','researches','communityServices','publications'
+        ]);
+
+        // ✅ FIX: tambah $stats sesuai blade
         $stats = [
-            'pendidikan'  => $lecturer->educations()->count(),
-            'penelitian'  => $lecturer->researches()->count(),
-            'pengabdian'  => $lecturer->communityServices()->count(),
-            'publikasi'   => $lecturer->publications()->count(),
+            'pendidikan' => $lecturer->educations->count(),
+            'penelitian' => $lecturer->researches->count(),
+            'pengabdian' => $lecturer->communityServices->count(),
+            'publikasi'  => $lecturer->publications->count(),
         ];
+
         return view('dosen.index', compact('lecturer', 'stats'));
     }
 
-    // ======================== PROFIL ========================
+    // ─── PROFIL ──────────────────────────────────────────────
     public function editProfil()
     {
-        $lecturer = $this->getLecturer();
+        $lecturer = $this->getLecturer()->load('studyProgram');
         return view('dosen.profil', compact('lecturer'));
     }
 
     public function updateProfil(Request $request)
     {
+        $lecturer = $this->getLecturer();
         $request->validate([
             'nidn'      => 'nullable|string|max:20',
-            'expertise' => 'nullable|string',
-            'is_public' => 'boolean',
+            'expertise' => 'nullable|string|max:500',
             'photo'     => 'nullable|image|max:2048',
         ]);
 
-        $lecturer = $this->getLecturer();
         $data = $request->only(['nidn', 'expertise']);
-        $data['is_public'] = $request->boolean('is_public');
 
         if ($request->hasFile('photo')) {
             if ($lecturer->photo) Storage::disk('public')->delete($lecturer->photo);
@@ -57,192 +59,199 @@ class DosenController extends Controller
         }
 
         $lecturer->update($data);
-
-        // Update nama user
-        if ($request->filled('name')) {
-            Auth::user()->update(['name' => $request->name]);
-        }
-
         return back()->with('success', 'Profil berhasil diperbarui.');
     }
 
-    // ======================== PENDIDIKAN ========================
+    // ─── PENDIDIKAN ──────────────────────────────────────────
     public function pendidikan()
     {
-        $lecturer = $this->getLecturer();
-        $educations = $lecturer->educations()->orderBy('year', 'desc')->get();
+        $lecturer   = $this->getLecturer();
+        $educations = $lecturer->educations()->orderByDesc('year')->get();
         return view('dosen.pendidikan', compact('lecturer', 'educations'));
     }
 
     public function storePendidikan(Request $request)
     {
         $request->validate([
-            'degree'      => 'required|string|max:10',
+            'degree'      => 'required|string|max:100',
             'institution' => 'required|string|max:255',
-            'major'       => 'nullable|string|max:255',
-            'year'        => 'required|integer|min:1950|max:' . date('Y'),
-            'visibility'  => 'required|in:public,private',
+            'year'        => 'required|integer|min:1970|max:'.date('Y'),
+            'visibility'  => 'required|in:public,internal',
         ]);
-
-        $this->getLecturer()->educations()->create($request->all());
+        $this->getLecturer()->educations()->create($request->only(['degree','institution','year','visibility']));
         return back()->with('success', 'Data pendidikan berhasil ditambahkan.');
     }
 
     public function updatePendidikan(Request $request, $id)
     {
-        $education = Education::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
         $request->validate([
-            'degree'      => 'required|string|max:10',
+            'degree'      => 'required|string|max:100',
             'institution' => 'required|string|max:255',
-            'major'       => 'nullable|string|max:255',
-            'year'        => 'required|integer|min:1950|max:' . date('Y'),
-            'visibility'  => 'required|in:public,private',
+            'year'        => 'required|integer|min:1970|max:'.date('Y'),
+            'visibility'  => 'required|in:public,internal',
         ]);
-        $education->update($request->all());
-        return back()->with('success', 'Data pendidikan berhasil diperbarui.');
+        Education::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
+            ->update($request->only(['degree','institution','year','visibility']));
+        return back()->with('success', 'Data pendidikan diperbarui.');
     }
 
     public function destroyPendidikan($id)
     {
         Education::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Data pendidikan berhasil dihapus.');
+        return back()->with('success', 'Data pendidikan dihapus.');
     }
 
     public function togglePendidikanVisibility($id)
     {
         $edu = Education::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $edu->update(['visibility' => $edu->visibility === 'public' ? 'private' : 'public']);
+        $edu->update(['visibility' => $edu->visibility === 'public' ? 'internal' : 'public']);
         return back()->with('success', 'Visibilitas diperbarui.');
     }
 
-    // ======================== PENELITIAN ========================
+    // ─── PENELITIAN ──────────────────────────────────────────
     public function penelitian()
     {
-        $lecturer = $this->getLecturer();
-        $penelitians = $lecturer->researches()->orderBy('year', 'desc')->get();
+        $lecturer    = $this->getLecturer();
+        // ✅ FIX: $penelitians (bukan $researches)
+        $penelitians = $lecturer->researches()->orderByDesc('year')->get();
         return view('dosen.penelitian', compact('lecturer', 'penelitians'));
     }
 
     public function storePenelitian(Request $request)
     {
         $request->validate([
-            'title'          => 'required|string',
-            'year'           => 'required|integer|min:1990|max:' . (date('Y') + 1),
-            'funding_source' => 'nullable|string|max:255',
-            'visibility'     => 'required|in:public,private',
+            'title'      => 'required|string|max:500',
+            'year'       => 'required|integer|min:1970|max:'.date('Y'),
+            'funding'    => 'nullable|string|max:255',
+            'visibility' => 'required|in:public,internal',
         ]);
-        $this->getLecturer()->researches()->create($request->all());
-        return back()->with('success', 'Data penelitian berhasil ditambahkan.');
+        $this->getLecturer()->researches()->create($request->only(['title','year','funding','visibility']));
+        return back()->with('success', 'Data penelitian ditambahkan.');
     }
 
     public function updatePenelitian(Request $request, $id)
     {
-        $item = Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
         $request->validate([
-            'title'          => 'required|string',
-            'year'           => 'required|integer',
-            'funding_source' => 'nullable|string|max:255',
-            'visibility'     => 'required|in:public,private',
+            'title'      => 'required|string|max:500',
+            'year'       => 'required|integer|min:1970|max:'.date('Y'),
+            'funding'    => 'nullable|string|max:255',
+            'visibility' => 'required|in:public,internal',
         ]);
-        $item->update($request->all());
-        return back()->with('success', 'Data penelitian berhasil diperbarui.');
+        Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
+            ->update($request->only(['title','year','funding','visibility']));
+        return back()->with('success', 'Data penelitian diperbarui.');
     }
 
     public function destroyPenelitian($id)
     {
         Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Data penelitian berhasil dihapus.');
+        return back()->with('success', 'Data penelitian dihapus.');
     }
 
     public function togglePenelitianVisibility($id)
     {
-        $item = Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $item->update(['visibility' => $item->visibility === 'public' ? 'private' : 'public']);
+        $r = Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
+        $r->update(['visibility' => $r->visibility === 'public' ? 'internal' : 'public']);
         return back()->with('success', 'Visibilitas diperbarui.');
     }
 
-    // ======================== PENGABDIAN ========================
+    // ─── PENGABDIAN ──────────────────────────────────────────
     public function pengabdian()
     {
-        $lecturer = $this->getLecturer();
-        $pengabdians = $lecturer->communityServices()->orderBy('year', 'desc')->get();
+        $lecturer    = $this->getLecturer();
+        // ✅ FIX: $pengabdians (bukan $pengabdian)
+        $pengabdians = $lecturer->communityServices()->orderByDesc('year')->get();
         return view('dosen.pengabdian', compact('lecturer', 'pengabdians'));
     }
 
     public function storePengabdian(Request $request)
     {
         $request->validate([
-            'title'      => 'required|string',
-            'year'       => 'required|integer',
+            'title'      => 'required|string|max:500',
+            'year'       => 'required|integer|min:1970|max:'.date('Y'),
             'location'   => 'nullable|string|max:255',
-            'visibility' => 'required|in:public,private',
+            'visibility' => 'required|in:public,internal',
         ]);
-        $this->getLecturer()->communityServices()->create($request->all());
-        return back()->with('success', 'Data pengabdian berhasil ditambahkan.');
+        $this->getLecturer()->communityServices()->create($request->only(['title','year','location','visibility']));
+        return back()->with('success', 'Data pengabdian ditambahkan.');
     }
 
     public function updatePengabdian(Request $request, $id)
     {
-        $item = CommunityService::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $item->update($request->all());
-        return back()->with('success', 'Data pengabdian berhasil diperbarui.');
+        $request->validate([
+            'title'      => 'required|string|max:500',
+            'year'       => 'required|integer|min:1970|max:'.date('Y'),
+            'location'   => 'nullable|string|max:255',
+            'visibility' => 'required|in:public,internal',
+        ]);
+        CommunityService::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
+            ->update($request->only(['title','year','location','visibility']));
+        return back()->with('success', 'Data pengabdian diperbarui.');
     }
 
     public function destroyPengabdian($id)
     {
         CommunityService::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Data pengabdian berhasil dihapus.');
+        return back()->with('success', 'Data pengabdian dihapus.');
     }
 
     public function togglePengabdianVisibility($id)
     {
-        $item = CommunityService::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $item->update(['visibility' => $item->visibility === 'public' ? 'private' : 'public']);
+        $cs = CommunityService::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
+        $cs->update(['visibility' => $cs->visibility === 'public' ? 'internal' : 'public']);
         return back()->with('success', 'Visibilitas diperbarui.');
     }
 
-    // ======================== PUBLIKASI ========================
+    // ─── PUBLIKASI ───────────────────────────────────────────
     public function publikasi()
     {
-        $lecturer = $this->getLecturer();
-        $publikasis = $lecturer->publications()->orderBy('year', 'desc')->get();
+        $lecturer   = $this->getLecturer();
+        // ✅ FIX: $publikasis (bukan $publikasi)
+        $publikasis = $lecturer->publications()->orderByDesc('year')->get();
         return view('dosen.publikasi', compact('lecturer', 'publikasis'));
     }
 
     public function storePublikasi(Request $request)
     {
         $request->validate([
-            'title'         => 'required|string',
-            'year'          => 'required|integer',
-            'publisher'     => 'nullable|string|max:255',
-            'publisher_url' => 'nullable|url|max:500',
-            'visibility'    => 'required|in:public,private',
+            'title'      => 'required|string|max:500',
+            'journal'    => 'nullable|string|max:255',
+            'year'       => 'required|integer|min:1970|max:'.date('Y'),
+            'doi'        => 'nullable|string|max:255',
+            'visibility' => 'required|in:public,internal',
         ]);
-        $this->getLecturer()->publications()->create($request->all());
-        return back()->with('success', 'Data publikasi berhasil ditambahkan.');
+        $this->getLecturer()->publications()->create($request->only(['title','journal','year','doi','visibility']));
+        return back()->with('success', 'Data publikasi ditambahkan.');
     }
 
     public function updatePublikasi(Request $request, $id)
     {
-        $item = Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $item->update($request->all());
-        return back()->with('success', 'Data publikasi berhasil diperbarui.');
+        $request->validate([
+            'title'      => 'required|string|max:500',
+            'journal'    => 'nullable|string|max:255',
+            'year'       => 'required|integer|min:1970|max:'.date('Y'),
+            'doi'        => 'nullable|string|max:255',
+            'visibility' => 'required|in:public,internal',
+        ]);
+        Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
+            ->update($request->only(['title','journal','year','doi','visibility']));
+        return back()->with('success', 'Data publikasi diperbarui.');
     }
 
     public function destroyPublikasi($id)
     {
         Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Data publikasi berhasil dihapus.');
+        return back()->with('success', 'Data publikasi dihapus.');
     }
 
     public function togglePublikasiVisibility($id)
     {
-        $item = Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $item->update(['visibility' => $item->visibility === 'public' ? 'private' : 'public']);
+        $p = Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
+        $p->update(['visibility' => $p->visibility === 'public' ? 'internal' : 'public']);
         return back()->with('success', 'Visibilitas diperbarui.');
     }
 
-    // ======================== PASSWORD ========================
+    // ─── PASSWORD ────────────────────────────────────────────
     public function editPassword()
     {
         return view('dosen.password');
@@ -255,11 +264,11 @@ class DosenController extends Controller
             'password'         => 'required|min:8|confirmed',
         ]);
 
-        if (!Hash::check($request->current_password, Auth::user()->password)) {
-            return back()->withErrors(['current_password' => 'Password saat ini tidak sesuai.']);
+        if (!Hash::check($request->current_password, auth()->user()->password)) {
+            return back()->withErrors(['current_password' => 'Password lama tidak sesuai.']);
         }
 
-        Auth::user()->update(['password' => Hash::make($request->password)]);
-        return back()->with('success', 'Password berhasil diperbarui.');
+        auth()->user()->update(['password' => Hash::make($request->password)]);
+        return back()->with('success', 'Password berhasil diubah.');
     }
 }

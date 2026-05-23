@@ -3,72 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk — Sistem Profil Dosen Vokasi</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <title>Masuk — Sistem Profil Dosen Vokasi IT Del</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23003087'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-weight='bold' font-size='13' fill='white'%3EDel%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config={theme:{extend:{colors:{del:{DEFAULT:'#003087',light:'#0051c3',dark:'#001f5c'}},fontFamily:{sans:['Plus Jakarta Sans','sans-serif'],display:['Playfair Display','serif']}}}}</script>
+    <script>tailwind.config={theme:{extend:{colors:{del:{DEFAULT:'#003087',light:'#0051c3',dark:'#001f5c',50:'#eff6ff'}}}}}</script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-del-dark via-del to-del-light flex items-center justify-center p-4" style="font-family:'Plus Jakarta Sans',sans-serif;">
-
+<body class="min-h-screen bg-gradient-to-br from-del to-del-light flex items-center justify-center p-4" style="font-family:'Plus Jakarta Sans',sans-serif;">
 <div class="w-full max-w-md">
     <!-- Card -->
     <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
         <!-- Header -->
         <div class="bg-del px-8 pt-8 pb-6 text-center">
-            <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center mx-auto mb-4 shadow">
-                <span class="text-del font-bold text-xl">Del</span>
-            </div>
-            <h1 class="text-white font-bold text-xl">Sistem Informasi</h1>
-            <p class="text-blue-200 text-sm mt-1">Profil Dosen Fakultas Vokasi</p>
+            <img src="/images/logo-del.png" alt="IT Del" class="h-16 mx-auto mb-3" onerror="this.style.display='none'">
+            <h1 class="text-white font-bold text-xl">Sistem Informasi Profil Dosen</h1>
+            <p class="text-blue-200 text-sm mt-1">Fakultas Vokasi — Institut Teknologi Del</p>
         </div>
-
         <!-- Form -->
-        <div class="px-8 py-8">
-            <h2 class="text-xl font-bold text-gray-800 mb-6">Masuk ke Akun</h2>
+        <div class="px-8 py-6">
+            <h2 class="text-gray-800 font-semibold text-lg mb-6">Masuk ke akun Anda</h2>
 
-            <form action="{{ route('login') }}" method="POST" class="space-y-5">
+            @if($errors->any())
+            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-5">
+                @foreach($errors->all() as $error)<p>• {{ $error }}</p>@endforeach
+            </div>
+            @endif
+
+            <form action="{{ route('login') }}" method="POST" class="space-y-4">
                 @csrf
-
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                    <label class="text-sm font-medium text-gray-700 block mb-1.5">Email</label>
                     <input type="email" name="email" value="{{ old('email') }}" required
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del focus:border-transparent transition-all @error('email') border-red-300 @enderror"
-                        placeholder="nama@del.ac.id">
-                    @error('email')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                           class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del transition"
+                           placeholder="nama@itdel.ac.id">
                 </div>
-
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+                    <label class="text-sm font-medium text-gray-700 block mb-1.5">Password</label>
                     <input type="password" name="password" required
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del focus:border-transparent transition-all"
-                        placeholder="••••••••">
+                           class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del transition"
+                           placeholder="••••••••">
                 </div>
-
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="remember" class="w-4 h-4 text-del rounded border-gray-300">
-                        <span class="text-sm text-gray-600">Ingat saya</span>
-                    </label>
-                </div>
-
-                <button type="submit" class="w-full bg-del text-white font-semibold py-3 rounded-xl hover:bg-del-light transition-colors text-sm shadow-lg shadow-blue-900/20">
+                <button type="submit"
+                        class="w-full bg-del text-white font-semibold py-2.5 rounded-xl hover:bg-del-light transition-colors shadow-sm mt-2">
                     Masuk
                 </button>
             </form>
-
-            <div class="mt-6 pt-6 border-t border-gray-100">
-                <a href="{{ route('home') }}" class="flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-del transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                    Kembali ke halaman publik
-                </a>
-            </div>
+            <p class="text-center text-xs text-gray-400 mt-6">
+                © {{ date('Y') }} Institut Teknologi Del · Fakultas Vokasi
+            </p>
         </div>
     </div>
-
-    <p class="text-center text-blue-200 text-xs mt-6">© {{ date('Y') }} Institut Teknologi Del</p>
 </div>
-
 </body>
 </html>
