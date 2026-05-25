@@ -15,6 +15,10 @@
     .stat-ring {
         background: conic-gradient(#003087 var(--pct), #e5e7eb 0%);
     }
+    /* Hide scrollbar but allow scroll — untuk sticky sidebar */
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
     @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
     .fade-up { animation: fadeUp .4s ease both; }
     .fade-up-d1 { animation-delay: .1s; }
@@ -38,7 +42,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         <!-- ════════════════ LEFT SIDEBAR ════════════════ -->
-        <div class="lg:col-span-4 space-y-5">
+        <div class="lg:col-span-4 space-y-5 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto scrollbar-hide">
 
             <!-- Hero Card -->
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden fade-up">
