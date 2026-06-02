@@ -45,27 +45,38 @@
         <div class="lg:col-span-4 space-y-5 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto scrollbar-hide">
 
             <!-- Hero Card -->
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden fade-up">
-                <!-- Cover gradient -->
-                <div class="h-28 bg-gradient-to-br from-del to-del-light relative">
+            {{-- ✅ FIX: hapus overflow-hidden dari wrapper agar avatar tidak terpotong --}}
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm fade-up">
+
+                <!-- Cover gradient — overflow-hidden hanya di sini agar rounded-t tetap bersih -->
+                <div class="h-24 bg-gradient-to-br from-del to-blue-600 relative rounded-t-2xl overflow-hidden">
+                    <!-- Pola dot dekoratif -->
                     <div class="absolute inset-0 opacity-10"
-                         style="background-image:url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1' fill='white'/%3E%3C/svg%3E\")">
+                         style="background-image:url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='white'/%3E%3C/svg%3E\")">
                     </div>
+                    <!-- Lingkaran dekoratif kanan -->
+                    <div class="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full"></div>
+                    <div class="absolute -right-2 -bottom-8 w-20 h-20 bg-white/5 rounded-full"></div>
                 </div>
 
-                <!-- Avatar -->
-                <div class="flex justify-center -mt-12 mb-3">
+                <!-- Avatar — z-10 agar selalu di atas cover, relative agar keluar dari flow -->
+                <div class="flex justify-center -mt-12 mb-4 relative z-10">
                     @if($lecturer->photo)
                         <img src="{{ Storage::url($lecturer->photo) }}"
-                             class="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover ring-2 ring-del/20">
+                             alt="{{ $lecturer->user->name }}"
+                             class="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover ring-2 ring-del/30">
                     @else
-                        <div class="w-24 h-24 rounded-full border-4 border-white shadow-md bg-del flex items-center justify-center ring-2 ring-del/20">
-                            <span class="text-white font-bold text-3xl">{{ strtoupper(substr($lecturer->user->name, 0, 1)) }}</span>
+                        <div class="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-gradient-to-br from-del to-blue-600
+                                    flex items-center justify-center ring-2 ring-del/30">
+                            <span class="text-white font-bold text-3xl select-none">
+                                {{ strtoupper(substr($lecturer->user->name, 0, 1)) }}
+                            </span>
                         </div>
                     @endif
                 </div>
 
-                <div class="px-5 pb-5 text-center">
+                <!-- Info teks -->
+                <div class="px-5 pb-6 text-center">
                     <h1 class="text-lg font-bold text-gray-800 leading-tight">{{ $lecturer->user->name }}</h1>
 
                     @if($lecturer->jabatan_fungsional)
@@ -77,7 +88,7 @@
                     @endif
 
                     @if($lecturer->studyProgram)
-                        <span class="inline-block mt-3 bg-blue-50 text-del text-xs font-semibold px-3 py-1 rounded-full">
+                        <span class="inline-block mt-3 bg-blue-50 text-del text-xs font-semibold px-3 py-1.5 rounded-full border border-blue-100">
                             {{ $lecturer->studyProgram->name }}
                         </span>
                     @endif
