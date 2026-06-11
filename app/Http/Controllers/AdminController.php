@@ -98,12 +98,31 @@ class AdminController extends Controller
             'jabatan_fungsional' => 'nullable|string|in:Asisten Ahli,Lektor,Lektor Kepala,Guru Besar / Profesor',
             'expertise'          => 'nullable|string',
         ]);
+
+        // Constraint: Dekan maksimal 1 aktif
         if ($request->role === 'dekan') {
             $exists = User::where('role', 'dekan')->where('is_active', true)->exists();
             if ($exists) {
-                return back()->withErrors(['role' => 'Hanya dapat ada 1 Dekan aktif.'])->withInput();
+                return back()
+                    ->withErrors(['role' => 'Hanya dapat ada 1 Dekan aktif. Nonaktifkan Dekan yang ada terlebih dahulu.'])
+                    ->withInput();
             }
         }
+
+        // Constraint: Kaprodi maksimal 1 aktif per program studi
+        if ($request->role === 'kaprodi') {
+            $prodiName = StudyProgram::find($request->study_program_id)?->name ?? 'prodi ini';
+            $existsKaprodi = User::where('role', 'kaprodi')
+                ->where('is_active', true)
+                ->whereHas('lecturer', fn($q) => $q->where('study_program_id', $request->study_program_id))
+                ->exists();
+            if ($existsKaprodi) {
+                return back()
+                    ->withErrors(['role' => "Sudah ada Kaprodi aktif untuk {$prodiName}. Nonaktifkan Kaprodi yang ada terlebih dahulu."])
+                    ->withInput();
+            }
+        }
+
         $user = User::create([
             'name'      => $request->name,
             'email'     => $request->email,
@@ -119,7 +138,15 @@ class AdminController extends Controller
             'expertise'          => $request->expertise,
             'is_public'          => true,
         ]);
-        return redirect()->route('admin.dosen')->with('success', 'Akun dosen berhasil dibuat.');
+
+        // Notifikasi dinamis per role
+        $roleLabel = match($request->role) {
+            'kaprodi' => 'kaprodi',
+            'dekan'   => 'dekan',
+            default   => 'dosen',
+        };
+        return redirect()->route('admin.dosen')
+            ->with('success', "Akun {$roleLabel} {$request->name} berhasil dibuat.");
     }
 
     public function editDosen($id)
@@ -145,13 +172,33 @@ class AdminController extends Controller
             'jabatan_fungsional' => 'nullable|string',
             'expertise'          => 'nullable|string',
         ]);
+
+        // Constraint: Dekan maksimal 1 aktif (saat ubah role ke dekan)
         if ($request->role === 'dekan' && $lecturer->user->role !== 'dekan') {
             $exists = User::where('role', 'dekan')->where('is_active', true)
                          ->where('id', '!=', $lecturer->user->id)->exists();
             if ($exists) {
-                return back()->withErrors(['role' => 'Hanya dapat ada 1 Dekan aktif.'])->withInput();
+                return back()
+                    ->withErrors(['role' => 'Hanya dapat ada 1 Dekan aktif. Nonaktifkan Dekan yang ada terlebih dahulu.'])
+                    ->withInput();
             }
         }
+
+        // Constraint: Kaprodi maksimal 1 aktif per prodi (saat ubah role/prodi ke kaprodi)
+        if ($request->role === 'kaprodi') {
+            $prodiName = StudyProgram::find($request->study_program_id)?->name ?? 'prodi ini';
+            $existsKaprodi = User::where('role', 'kaprodi')
+                ->where('is_active', true)
+                ->where('id', '!=', $lecturer->user_id)
+                ->whereHas('lecturer', fn($q) => $q->where('study_program_id', $request->study_program_id))
+                ->exists();
+            if ($existsKaprodi) {
+                return back()
+                    ->withErrors(['role' => "Sudah ada Kaprodi aktif untuk {$prodiName}. Nonaktifkan Kaprodi yang ada terlebih dahulu."])
+                    ->withInput();
+            }
+        }
+
         $lecturer->user->update([
             'name'  => $request->name,
             'email' => $request->email,

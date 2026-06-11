@@ -1,131 +1,150 @@
 @extends('layouts.dashboard')
-@section('title', 'Kelola Program Studi')
-@section('page-title', 'Kelola Program Studi')
+@section('title', 'Edit Profil')
+@section('page-title', 'Edit Profil')
 
 @section('content')
+<div class="pt-4 max-w-2xl">
+    <div class="bg-white rounded-2xl border border-gray-100 p-6">
+        <form action="{{ route('dosen.profil.update') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+            @csrf @method('PUT')
 
-{{-- Error --}}
-@if($errors->any())
-<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-5">
-    @foreach($errors->all() as $error)<p>• {{ $error }}</p>@endforeach
+            <!-- Foto -->
+            <div class="flex items-center gap-6 pb-5 border-b border-gray-100">
+                <div class="w-20 h-20 rounded-2xl bg-blue-50 border-2 border-del/20 flex items-center justify-center overflow-hidden">
+                    @if($lecturer->photo)
+                        <img src="{{ Storage::url($lecturer->photo) }}" class="w-full h-full object-cover">
+                    @else
+                        <span class="text-del text-2xl font-bold">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                    @endif
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Foto Profil</label>
+                    <input type="file" name="photo" accept="image/*" class="text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-blue-50 file:text-del file:text-sm file:font-medium hover:file:bg-blue-100 cursor-pointer">
+                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, maks. 2MB</p>
+                </div>
+            </div>
+
+            <!-- Nama -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Lengkap</label>
+                <input type="text" name="name" value="{{ old('name', auth()->user()->name) }}"
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
+            </div>
+
+            <!-- NIDN -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">NIDN</label>
+                <input type="text" name="nidn" value="{{ old('nidn', $lecturer->nidn) }}"
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del"
+                    placeholder="10 digit NIDN">
+            </div>
+
+            <!-- Jabatan Fungsional -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                    Jabatan Fungsional
+                    <span class="text-xs text-gray-400 font-normal ml-1">(Sesuai SK Dikti)</span>
+                </label>
+                <select name="jabatan_fungsional"
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del bg-white">
+                    <option value="">— Pilih Jabatan Fungsional —</option>
+                    @foreach(App\Models\Lecturer::jabatanFungsionalOptions() as $jf)
+                        <option value="{{ $jf }}" {{ old('jabatan_fungsional', $lecturer->jabatan_fungsional) === $jf ? 'selected' : '' }}>
+                            {{ $jf }}
+                        </option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-gray-400 mt-1">Berdasarkan Permendikbud No. 92 Tahun 2014</p>
+            </div>
+
+            <!-- Kepakaran -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Kepakaran / Bidang Keahlian</label>
+                <textarea name="expertise" rows="3"
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del resize-none"
+                    placeholder="Contoh: Rekayasa Perangkat Lunak, Machine Learning, Web Development">{{ old('expertise', $lecturer->expertise) }}</textarea>
+            </div>
+
+            <!-- Visibilitas Profil -->
+            <div class="bg-gray-50 rounded-xl p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">Profil Publik</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Aktifkan agar profil terlihat oleh pengunjung tanpa login</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_public" value="1" class="sr-only peer" {{ $lecturer->is_public ? 'checked' : '' }}>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-del"></div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="bg-del text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-del-light transition-colors">
+                    Simpan Perubahan
+                </button>
+                <a href="{{ route('dosen.index') }}" class="px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+                    Batal
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if(auth()->user()->isDekan())
+{{-- ═══════════════════════════════════════════════════
+     SECTION: Transfer Jabatan Dekan (hanya muncul untuk Dekan)
+═══════════════════════════════════════════════════ --}}
+<div class="mt-6 bg-white rounded-2xl border border-red-100 p-6">
+    <div class="flex items-start gap-3 mb-5">
+        <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+        </div>
+        <div>
+            <h3 class="text-sm font-semibold text-gray-800">Alihkan Jabatan Dekan</h3>
+            <p class="text-xs text-gray-500 mt-0.5">
+                Pilih dosen yang akan diangkat sebagai Dekan baru. Setelah dikonfirmasi, Anda akan otomatis turun menjadi Dosen dan sesi Anda akan berakhir.
+            </p>
+        </div>
+    </div>
+
+    <form action="{{ route('dosen.transfer-dekan') }}" method="POST"
+          onsubmit="return confirm('Anda yakin ingin mengalihkan jabatan Dekan? Sesi Anda akan berakhir dan Anda perlu login ulang.')">
+        @csrf @method('POST')
+
+        @error('transfer_to_lecturer_id')
+            <div class="mb-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+                {{ $message }}
+            </div>
+        @enderror
+
+        <div class="flex gap-3 items-end">
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                    Pilih Penerima Jabatan *
+                </label>
+                <select name="transfer_to_lecturer_id" required
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white">
+                    <option value="">— Pilih dosen —</option>
+                    @foreach($allLecturers as $lec)
+                        @if($lec->user_id !== auth()->id() && $lec->user->is_active && $lec->user->role !== 'dekan')
+                            <option value="{{ $lec->id }}">
+                                {{ $lec->user->name }}
+                                ({{ $lec->studyProgram->name ?? '-' }} · {{ ucfirst($lec->user->role) }})
+                            </option>
+                        @endif
+                    @endforeach
+                </select>
+            </div>
+            <button type="submit"
+                class="px-5 py-2.5 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600 transition-colors whitespace-nowrap">
+                Alihkan Jabatan
+            </button>
+        </div>
+    </form>
 </div>
 @endif
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    {{-- ── FORM TAMBAH ── --}}
-    <div class="lg:col-span-1">
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 class="text-sm font-semibold text-gray-800 mb-4">Tambah Program Studi</h2>
-            <form action="{{ route('admin.prodi.store') }}" method="POST" class="space-y-4">
-                @csrf
-                <div>
-                    <label class="text-xs font-medium text-gray-600 block mb-1.5">Nama Program Studi</label>
-                    <input type="text" name="name" value="{{ old('name') }}" required
-                           placeholder="cth: D4 Teknologi Rekayasa Perangkat Lunak"
-                           class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del transition">
-                </div>
-                <button type="submit"
-                        class="w-full bg-del text-white font-semibold py-2.5 rounded-xl hover:bg-del-light transition-colors text-sm">
-                    + Tambah Prodi
-                </button>
-            </form>
-        </div>
-
-        {{-- Info Box --}}
-        <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mt-4 text-xs text-blue-700 leading-relaxed">
-            <p class="font-semibold mb-1">⚠️ Catatan</p>
-            <p>Prodi yang masih memiliki dosen <strong>tidak dapat dihapus</strong>. Pindahkan atau hapus dosen terlebih dahulu sebelum menghapus prodi.</p>
-        </div>
-    </div>
-
-    {{-- ── DAFTAR PRODI ── --}}
-    <div class="lg:col-span-2">
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h2 class="text-sm font-semibold text-gray-800">Daftar Program Studi</h2>
-                <span class="text-xs bg-del/10 text-del font-semibold px-3 py-1 rounded-full">
-                    {{ $studyPrograms->count() }} Prodi
-                </span>
-            </div>
-
-            @if($studyPrograms->isEmpty())
-                <div class="text-center py-12 text-gray-400 text-sm">
-                    Belum ada program studi. Tambahkan di form sebelah kiri.
-                </div>
-            @else
-            <div class="divide-y divide-gray-50">
-                @foreach($studyPrograms as $prodi)
-                <div class="px-6 py-4" x-data="{ editing: false }">
-
-                    {{-- View mode --}}
-                    <div x-show="!editing" class="flex items-center justify-between gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-del/10 flex items-center justify-center flex-shrink-0">
-                                <svg class="w-4 h-4 text-del" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-800">{{ $prodi->name }}</p>
-                                <p class="text-xs text-gray-400">
-                                    {{ $prodi->lecturers_count }} dosen
-                                    @if($prodi->lecturers_count === 0)
-                                        <span class="text-orange-400">· bisa dihapus</span>
-                                    @endif
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 flex-shrink-0">
-                            <button @click="editing = true"
-                                    class="text-xs text-del border border-del/30 hover:bg-del/5 px-3 py-1.5 rounded-lg transition-colors font-medium">
-                                Edit
-                            </button>
-                            @if($prodi->lecturers_count === 0)
-                            <form action="{{ route('admin.prodi.destroy', $prodi->id) }}" method="POST"
-                                  onsubmit="return confirm('Hapus program studi {{ $prodi->name }}?')">
-                                @csrf @method('DELETE')
-                                <button type="submit"
-                                        class="text-xs text-red-500 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors font-medium">
-                                    Hapus
-                                </button>
-                            </form>
-                            @else
-                            <span class="text-xs text-gray-300 border border-gray-100 px-3 py-1.5 rounded-lg cursor-not-allowed">
-                                Hapus
-                            </span>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- Edit mode --}}
-                    <div x-show="editing" x-cloak>
-                        <form action="{{ route('admin.prodi.update', $prodi->id) }}" method="POST"
-                              class="flex items-center gap-2">
-                            @csrf @method('PUT')
-                            <input type="text" name="name" value="{{ $prodi->name }}" required
-                                   class="flex-1 border border-del/40 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
-                            <button type="submit"
-                                    class="text-xs bg-del text-white px-4 py-2 rounded-xl hover:bg-del-light transition-colors font-semibold flex-shrink-0">
-                                Simpan
-                            </button>
-                            <button type="button" @click="editing = false"
-                                    class="text-xs text-gray-500 border border-gray-200 px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors flex-shrink-0">
-                                Batal
-                            </button>
-                        </form>
-                    </div>
-
-                </div>
-                @endforeach
-            </div>
-            @endif
-        </div>
-    </div>
-</div>
-
 @endsection
-
-@push('scripts')
-<script src="//unpkg.com/alpinejs" defer></script>
-@endpush

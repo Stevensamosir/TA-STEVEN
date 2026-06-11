@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\DosenController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\DoiController;
 
 // PUBLIC
 Route::get('/',           [PublicController::class, 'index'])->name('home');
@@ -51,6 +52,9 @@ Route::middleware(['auth', 'role:dosen,kaprodi,dekan'])->prefix('dashboard')->na
 
     Route::get('/password', [DosenController::class, 'editPassword'])->name('password');
     Route::put('/password', [DosenController::class, 'updatePassword'])->name('password.update');
+
+    // Transfer jabatan Dekan (hanya Dekan yang bisa, dari halaman profil sendiri)
+    Route::post('/transfer-dekan', [DosenController::class, 'transferDekan'])->name('transfer-dekan');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -94,3 +98,9 @@ Route::middleware(['auth', 'role:kaprodi'])->prefix('admin')->name('admin.')->gr
     Route::get('/profil/{id}',   [AdminController::class, 'editProfilDosen'])->name('profil.edit');
     Route::put('/profil/{id}',   [AdminController::class, 'updateProfilDosen'])->name('profil.update');
 });
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DOI LOOKUP — Public API (tidak perlu login, Crossref adalah public API)
+// ─────────────────────────────────────────────────────────────────────────────
+Route::get('/api/doi', [DoiController::class, 'fetch'])->name('api.doi');

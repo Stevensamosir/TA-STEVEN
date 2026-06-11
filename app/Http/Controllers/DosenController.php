@@ -70,7 +70,16 @@ class DosenController extends Controller
     public function editProfil()
     {
         $lecturer = $this->getLecturer()->load('studyProgram');
-        return view('dosen.profil', compact('lecturer'));
+
+        // Untuk Dekan: kirim daftar semua dosen aktif (untuk dropdown transfer jabatan)
+        $allLecturers = collect();
+        if (auth()->user()->isDekan()) {
+            $allLecturers = \App\Models\Lecturer::with(['user', 'studyProgram'])
+                ->whereHas('user', fn($q) => $q->where('is_active', true)->where('role', '!=', 'dekan'))
+                ->get();
+        }
+
+        return view('dosen.profil', compact('lecturer', 'allLecturers'));
     }
 
     public function updateProfil(Request $request)
@@ -159,25 +168,25 @@ class DosenController extends Controller
     public function storePenelitian(Request $request)
     {
         $request->validate([
-            'title'      => 'required|string|max:500',
-            'year'       => 'required|integer|min:1970|max:'.date('Y'),
-            'funding'    => 'nullable|string|max:255',
-            'visibility' => 'required|in:public,private',
+            'title'          => 'required|string|max:500',
+            'year'           => 'required|integer|min:1970|max:'.date('Y'),
+            'funding_source' => 'nullable|string|max:255',
+            'visibility'     => 'required|in:public,private',
         ]);
-        $this->getLecturer()->researches()->create($request->only(['title','year','funding','visibility']));
+        $this->getLecturer()->researches()->create($request->only(['title','year','funding_source','visibility']));
         return back()->with('success', 'Data penelitian ditambahkan.');
     }
 
     public function updatePenelitian(Request $request, $id)
     {
         $request->validate([
-            'title'      => 'required|string|max:500',
-            'year'       => 'required|integer|min:1970|max:'.date('Y'),
-            'funding'    => 'nullable|string|max:255',
-            'visibility' => 'required|in:public,private',
+            'title'          => 'required|string|max:500',
+            'year'           => 'required|integer|min:1970|max:'.date('Y'),
+            'funding_source' => 'nullable|string|max:255',
+            'visibility'     => 'required|in:public,private',
         ]);
         Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['title','year','funding','visibility']));
+            ->update($request->only(['title','year','funding_source','visibility']));
         return back()->with('success', 'Data penelitian diperbarui.');
     }
 
@@ -253,27 +262,27 @@ class DosenController extends Controller
     public function storePublikasi(Request $request)
     {
         $request->validate([
-            'title'      => 'required|string|max:500',
-            'journal'    => 'nullable|string|max:255',
-            'year'       => 'required|integer|min:1970|max:'.date('Y'),
-            'doi'        => 'nullable|string|max:255',
-            'visibility' => 'required|in:public,private',
+            'title'         => 'required|string|max:500',
+            'publisher'     => 'nullable|string|max:255',
+            'publisher_url' => 'nullable|string|max:500',
+            'year'          => 'required|integer|min:1970|max:'.date('Y'),
+            'visibility'    => 'required|in:public,private',
         ]);
-        $this->getLecturer()->publications()->create($request->only(['title','journal','year','doi','visibility']));
+        $this->getLecturer()->publications()->create($request->only(['title','publisher','publisher_url','year','visibility']));
         return back()->with('success', 'Data publikasi ditambahkan.');
     }
 
     public function updatePublikasi(Request $request, $id)
     {
         $request->validate([
-            'title'      => 'required|string|max:500',
-            'journal'    => 'nullable|string|max:255',
-            'year'       => 'required|integer|min:1970|max:'.date('Y'),
-            'doi'        => 'nullable|string|max:255',
-            'visibility' => 'required|in:public,private',
+            'title'         => 'required|string|max:500',
+            'publisher'     => 'nullable|string|max:255',
+            'publisher_url' => 'nullable|string|max:500',
+            'year'          => 'required|integer|min:1970|max:'.date('Y'),
+            'visibility'    => 'required|in:public,private',
         ]);
         Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['title','journal','year','doi','visibility']));
+            ->update($request->only(['title','publisher','publisher_url','year','visibility']));
         return back()->with('success', 'Data publikasi diperbarui.');
     }
 
@@ -288,6 +297,54 @@ class DosenController extends Controller
         $p = Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
         $p->update(['visibility' => $p->visibility === 'public' ? 'private' : 'public']);
         return back()->with('success', 'Visibilitas diperbarui.');
+    }
+
+    // ─── TRANSFER JABATAN DEKAN (Dekan only, dari profil sendiri) ───
+    public function transferDekan(Request $request)
+    {
+        $auth = auth()->user();
+
+        // Hanya Dekan yang bisa
+        if (!$auth->isDekan()) {
+            abort(403, 'Hanya Dekan yang dapat mengalihkan jabatan.');
+        }
+
+        $request->validate([
+            'transfer_to_lecturer_id' => 'required|exists:lecturers,id',
+        ]);
+
+        $targetLecturer = \App\Models\Lecturer::with('user')->findOrFail($request->transfer_to_lecturer_id);
+
+        // Pastikan target bukan Dekan itu sendiri
+        if ($targetLecturer->user_id === $auth->id) {
+            return back()->withErrors(['transfer_to_lecturer_id' => 'Tidak dapat mengalihkan jabatan ke diri sendiri.']);
+        }
+
+        // Pastikan target adalah dosen aktif (bukan Dekan lain)
+        if (!$targetLecturer->user->is_active) {
+            return back()->withErrors(['transfer_to_lecturer_id' => 'Akun tujuan tidak aktif.']);
+        }
+        if ($targetLecturer->user->role === 'dekan') {
+            return back()->withErrors(['transfer_to_lecturer_id' => 'Akun tujuan sudah menjabat sebagai Dekan.']);
+        }
+
+        // Simpan role lama target untuk notifikasi
+        $targetOldRole = $targetLecturer->user->role;
+        $targetName    = $targetLecturer->user->name;
+
+        // 1. Turunkan Dekan saat ini menjadi Dosen
+        $auth->update(['role' => 'dosen']);
+
+        // 2. Angkat target menjadi Dekan baru
+        $targetLecturer->user->update(['role' => 'dekan']);
+
+        // 3. Logout sesi Dekan lama dan redirect ke login
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')
+            ->with('success', "Jabatan Dekan berhasil dialihkan ke {$targetName}. Silakan login ulang.");
     }
 
     // ─── PASSWORD ────────────────────────────────────────────
