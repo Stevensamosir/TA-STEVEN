@@ -75,7 +75,8 @@
 
         <!-- Navigation -->
         <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
-            @if(in_array(auth()->user()->role, ['dekan','kaprodi']))
+            {{-- ===== MENU DEKAN: akses penuh semua fitur admin ===== --}}
+            @if(auth()->user()->isDekan())
             <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 pt-2 pb-1">Admin</div>
             <a href="{{ route('admin.index') }}" class="sidebar-link {{ request()->routeIs('admin.index') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -88,11 +89,23 @@
             <a href="{{ route('admin.prodi') }}" class="sidebar-link {{ request()->routeIs('admin.prodi*') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/>
-                </svg>Kelola Prodi</a>
+                </svg>
+                Kelola Prodi
+            </a>
             <a href="{{ route('admin.hierarki') }}" class="sidebar-link {{ request()->routeIs('admin.hierarki*') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
                 Hierarki Kaprodi
             </a>
+            <a href="{{ route('admin.internal') }}" class="sidebar-link {{ request()->routeIs('admin.internal') ? 'active' : '' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Data Internal
+            </a>
+            <div class="border-t border-gray-100 my-2"></div>
+            @endif
+
+            {{-- ===== MENU KAPRODI: hanya Data Internal (view-only monitoring) ===== --}}
+            @if(auth()->user()->isKaprodi())
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 pt-2 pb-1">Monitoring</div>
             <a href="{{ route('admin.internal') }}" class="sidebar-link {{ request()->routeIs('admin.internal') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 Data Internal
@@ -178,4 +191,3 @@
 @stack('scripts')
 </body>
 </html>
-    

@@ -35,10 +35,12 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        if (in_array(Auth::user()->role, ['dekan', 'kaprodi'])) {
+        // Dekan → Dashboard Admin (akses penuh)
+        if (Auth::user()->isDekan()) {
             return redirect()->intended(route('admin.index'));
         }
 
+        // Kaprodi & Dosen → Dashboard Profil Sendiri
         return redirect()->intended(route('dosen.index'));
     }
 

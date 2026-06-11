@@ -96,6 +96,7 @@ class DatabaseSeeder extends Seeder
         // 4. UPDATE KAPRODI (setelah lecturers ada)
         // ============================================================
         $trpl->update(['head_lecturer_id' => $lecKaprodi->id]);
+        // Kaprodi TRKJ — dosen2 (Pak Rudy) dijadikan kaprodi sementara
         $trkj->update(['head_lecturer_id' => $lecDosen2->id]);
 
         // ============================================================

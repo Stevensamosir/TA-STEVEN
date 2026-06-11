@@ -34,30 +34,44 @@
                         <td class="px-5 py-3 text-gray-500 text-xs">{{ $d->studyProgram->name ?? '-' }}</td>
                         <td class="px-5 py-3">
                             <span class="text-xs font-medium px-2 py-1 rounded-full
-                                {{ $d->user->role === 'dekan' ? 'bg-red-50 text-red-700' : ($d->user->role === 'kaprodi' ? 'bg-yellow-50 text-yellow-700' : 'bg-blue-50 text-del') }}">
+                                {{ $d->user->role === 'dekan'   ? 'bg-red-50 text-red-700'    :
+                                  ($d->user->role === 'kaprodi' ? 'bg-yellow-50 text-yellow-700' :
+                                                                  'bg-blue-50 text-del') }}">
                                 {{ ucfirst($d->user->role) }}
                             </span>
                         </td>
+
+                        {{-- Toggle Status Akun --}}
                         <td class="px-5 py-3">
                             <form action="{{ route('admin.dosen.toggle-active', $d->id) }}" method="POST">
                                 @csrf @method('PATCH')
-                                <button type="submit" class="text-xs font-medium px-2.5 py-1 rounded-full {{ $d->user->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600' }}">
+                                <button type="submit"
+                                    class="text-xs font-medium px-2.5 py-1 rounded-full
+                                        {{ $d->user->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600' }}">
                                     {{ $d->user->is_active ? '✓ Aktif' : '✗ Nonaktif' }}
                                 </button>
                             </form>
                         </td>
+
+                        {{-- Toggle Visibilitas Profil --}}
                         <td class="px-5 py-3">
                             <form action="{{ route('admin.dosen.visibility', $d->id) }}" method="POST">
                                 @csrf @method('PATCH')
-                                <button type="submit" class="text-xs font-medium px-2.5 py-1 rounded-full {{ $d->is_public ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500' }}">
+                                <button type="submit"
+                                    class="text-xs font-medium px-2.5 py-1 rounded-full
+                                        {{ $d->is_public ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500' }}">
                                     {{ $d->is_public ? 'Publik' : 'Internal' }}
                                 </button>
                             </form>
                         </td>
+
+                        {{-- Aksi Edit & Reset PW --}}
                         <td class="px-5 py-3">
                             <div class="flex items-center gap-3">
-                                <a href="{{ route('admin.dosen.edit', $d->id) }}" class="text-xs text-del hover:underline">Edit</a>
-                                <form action="{{ route('admin.dosen.reset-password', $d->id) }}" method="POST" onsubmit="return confirm('Reset password ke default?')">
+                                <a href="{{ route('admin.dosen.edit', $d->id) }}"
+                                   class="text-xs text-del hover:underline">Edit</a>
+                                <form action="{{ route('admin.dosen.reset-password', $d->id) }}" method="POST"
+                                      onsubmit="return confirm('Reset password ke default?')">
                                     @csrf @method('PATCH')
                                     <button type="submit" class="text-xs text-orange-500 hover:underline">Reset PW</button>
                                 </form>
