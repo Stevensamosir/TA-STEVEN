@@ -332,6 +332,13 @@ class DosenController extends Controller
         $targetOldRole = $targetLecturer->user->role;
         $targetName    = $targetLecturer->user->name;
 
+        // ✅ FIX: Jika target adalah Kaprodi aktif, kosongkan head_lecturer_id prodinya
+        // agar prodi tidak menjadi tanpa kaprodi secara diam-diam
+        if ($targetOldRole === 'kaprodi') {
+            \App\Models\StudyProgram::where('head_lecturer_id', $targetLecturer->id)
+                ->update(['head_lecturer_id' => null]);
+        }
+
         // 1. Turunkan Dekan saat ini menjadi Dosen
         $auth->update(['role' => 'dosen']);
 

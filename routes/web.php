@@ -85,18 +85,22 @@ Route::middleware(['auth', 'role:dekan'])->prefix('admin')->name('admin.')->grou
     Route::put('/prodi/{id}',                    [AdminController::class, 'updateProdi'])->name('prodi.update');
     Route::delete('/prodi/{id}',                 [AdminController::class, 'destroyProdi'])->name('prodi.destroy');
 
-    // Data Internal
-    Route::get('/internal',                      [AdminController::class, 'internal'])->name('internal');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MONITORING — KAPRODI ONLY
-// Kaprodi: lihat semua data internal + edit profil dosen di prodinya sendiri
+// Kaprodi: edit profil dosen di prodinya sendiri
+// (route /internal sudah ada di group Dekan di atas — tidak perlu duplikat)
 // ─────────────────────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:kaprodi'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/internal',      [AdminController::class, 'internal'])->name('internal');
     Route::get('/profil/{id}',   [AdminController::class, 'editProfilDosen'])->name('profil.edit');
     Route::put('/profil/{id}',   [AdminController::class, 'updateProfilDosen'])->name('profil.update');
+});
+
+// Data Internal: Dekan + Kaprodi sama-sama boleh akses
+// Route terpisah agar tidak ada naming conflict
+Route::middleware(['auth', 'role:dekan,kaprodi'])->prefix('admin')->group(function () {
+    Route::get('/internal', [AdminController::class, 'internal'])->name('admin.internal');
 });
 
 

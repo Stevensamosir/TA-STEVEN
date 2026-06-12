@@ -90,4 +90,60 @@
         </form>
     </div>
 </div>
+
+@if(auth()->user()->isDekan())
+{{-- ═══════════════════════════════════════════
+     TRANSFER JABATAN DEKAN — hanya muncul untuk Dekan
+═══════════════════════════════════════════ --}}
+<div class="mt-6 bg-white rounded-2xl border border-red-100 p-6">
+    <div class="flex items-start gap-3 mb-5">
+        <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+        </div>
+        <div>
+            <h3 class="text-sm font-semibold text-gray-800">Alihkan Jabatan Dekan</h3>
+            <p class="text-xs text-gray-500 mt-0.5">
+                Pilih dosen penerima jabatan Dekan. Setelah dikonfirmasi, Anda otomatis turun menjadi Dosen
+                dan sesi Anda akan berakhir.
+            </p>
+        </div>
+    </div>
+
+    @if($errors->has('transfer_to_lecturer_id'))
+        <div class="mb-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+            {{ $errors->first('transfer_to_lecturer_id') }}
+        </div>
+    @endif
+
+    <form action="{{ route('dosen.transfer-dekan') }}" method="POST"
+          onsubmit="return confirm('Yakin ingin mengalihkan jabatan Dekan? Sesi Anda akan berakhir setelah ini.')">
+        @csrf
+        <div class="flex gap-3 items-end">
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                    Pilih Penerima Jabatan <span class="text-red-500">*</span>
+                </label>
+                <select name="transfer_to_lecturer_id" required
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white">
+                    <option value="">— Pilih dosen aktif —</option>
+                    @foreach($allLecturers as $lec)
+                        <option value="{{ $lec->id }}">
+                            {{ $lec->user->name }}
+                            ({{ $lec->studyProgram->name ?? '-' }} · {{ ucfirst($lec->user->role) }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <button type="submit"
+                class="px-5 py-2.5 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600 transition-colors whitespace-nowrap">
+                Alihkan Jabatan
+            </button>
+        </div>
+    </form>
+</div>
+@endif
+
 @endsection
