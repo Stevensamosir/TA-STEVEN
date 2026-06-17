@@ -31,6 +31,26 @@
                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
             </div>
 
+            <!-- Email -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <input type="email" name="email" value="{{ old('email', auth()->user()->email) }}"
+                        class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del"
+                        placeholder="email@example.com">
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Email ini akan ditampilkan di profil publik Anda</p>
+                @error('email')
+                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
             <!-- NIDN -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">NIDN</label>

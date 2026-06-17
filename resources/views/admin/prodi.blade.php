@@ -31,6 +31,26 @@
                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
             </div>
 
+            <!-- Email -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <input type="email" name="email" value="{{ old('email', auth()->user()->email) }}"
+                        class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del"
+                        placeholder="email@example.com">
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Email ini akan ditampilkan di profil publik Anda</p>
+                @error('email')
+                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
             <!-- NIDN -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">NIDN</label>
@@ -92,49 +112,48 @@
 </div>
 
 @if(auth()->user()->isDekan())
-{{-- ═══════════════════════════════════════════════════
-     SECTION: Transfer Jabatan Dekan (hanya muncul untuk Dekan)
-═══════════════════════════════════════════════════ --}}
+{{-- ═══════════════════════════════════════════
+     TRANSFER JABATAN DEKAN — hanya muncul untuk Dekan
+═══════════════════════════════════════════ --}}
 <div class="mt-6 bg-white rounded-2xl border border-red-100 p-6">
     <div class="flex items-start gap-3 mb-5">
         <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0 mt-0.5">
             <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
             </svg>
         </div>
         <div>
             <h3 class="text-sm font-semibold text-gray-800">Alihkan Jabatan Dekan</h3>
             <p class="text-xs text-gray-500 mt-0.5">
-                Pilih dosen yang akan diangkat sebagai Dekan baru. Setelah dikonfirmasi, Anda akan otomatis turun menjadi Dosen dan sesi Anda akan berakhir.
+                Pilih dosen penerima jabatan Dekan. Setelah dikonfirmasi, Anda otomatis turun menjadi Dosen
+                dan sesi Anda akan berakhir.
             </p>
         </div>
     </div>
 
+    @if($errors->has('transfer_to_lecturer_id'))
+        <div class="mb-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+            {{ $errors->first('transfer_to_lecturer_id') }}
+        </div>
+    @endif
+
     <form action="{{ route('dosen.transfer-dekan') }}" method="POST"
-          onsubmit="return confirm('Anda yakin ingin mengalihkan jabatan Dekan? Sesi Anda akan berakhir dan Anda perlu login ulang.')">
-        @csrf @method('POST')
-
-        @error('transfer_to_lecturer_id')
-            <div class="mb-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
-                {{ $message }}
-            </div>
-        @enderror
-
+          onsubmit="return confirm('Yakin ingin mengalihkan jabatan Dekan? Sesi Anda akan berakhir setelah ini.')">
+        @csrf
         <div class="flex gap-3 items-end">
             <div class="flex-1">
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                    Pilih Penerima Jabatan *
+                    Pilih Penerima Jabatan <span class="text-red-500">*</span>
                 </label>
                 <select name="transfer_to_lecturer_id" required
                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white">
-                    <option value="">— Pilih dosen —</option>
+                    <option value="">— Pilih dosen aktif —</option>
                     @foreach($allLecturers as $lec)
-                        @if($lec->user_id !== auth()->id() && $lec->user->is_active && $lec->user->role !== 'dekan')
-                            <option value="{{ $lec->id }}">
-                                {{ $lec->user->name }}
-                                ({{ $lec->studyProgram->name ?? '-' }} · {{ ucfirst($lec->user->role) }})
-                            </option>
-                        @endif
+                        <option value="{{ $lec->id }}">
+                            {{ $lec->user->name }}
+                            ({{ $lec->studyProgram->name ?? '-' }} · {{ ucfirst($lec->user->role) }})
+                        </option>
                     @endforeach
                 </select>
             </div>

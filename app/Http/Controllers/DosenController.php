@@ -90,6 +90,7 @@ class DosenController extends Controller
             'jabatan_fungsional' => 'nullable|string|in:Asisten Ahli,Lektor,Lektor Kepala,Guru Besar / Profesor',
             'expertise'          => 'nullable|string|max:500',
             'photo'              => 'nullable|image|max:2048',
+            'email'              => 'nullable|email|max:255|unique:users,email,' . auth()->id(),
         ]);
 
         $data = $request->only(['nidn', 'jabatan_fungsional', 'expertise']);
@@ -105,6 +106,11 @@ class DosenController extends Controller
         // Update nama user jika berubah
         if ($request->filled('name') && $request->name !== auth()->user()->name) {
             auth()->user()->update(['name' => $request->name]);
+        }
+
+        // Update email user jika berubah
+        if ($request->filled('email') && $request->email !== auth()->user()->email) {
+            auth()->user()->update(['email' => $request->email]);
         }
 
         return back()->with('success', 'Profil berhasil diperbarui.');

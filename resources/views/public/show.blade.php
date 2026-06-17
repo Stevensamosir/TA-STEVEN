@@ -99,6 +99,20 @@
                             <p class="text-sm text-gray-700 leading-relaxed">{{ $lecturer->expertise }}</p>
                         </div>
                     @endif
+
+                    @if($lecturer->user->email)
+                        <div class="mt-4 pt-4 border-t border-gray-100 text-left">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Kontak</p>
+                            <a href="mailto:{{ $lecturer->user->email }}"
+                               class="inline-flex items-center gap-2 text-sm text-del hover:underline break-all">
+                                <svg class="w-4 h-4 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                {{ $lecturer->user->email }}
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -124,6 +138,16 @@
             <!-- Contact / Share -->
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 fade-up fade-up-d2">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Bagikan Profil</p>
+                @if($lecturer->user->email)
+                <a href="mailto:{{ $lecturer->user->email }}"
+                   class="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-del hover:text-white text-del text-sm font-medium rounded-xl px-4 py-2.5 transition-all border border-blue-100 hover:border-del mb-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    Kirim Email
+                </a>
+                @endif
                 <button onclick="navigator.clipboard.writeText(window.location.href).then(()=>alert('URL disalin!'))"
                         class="w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-del hover:text-white text-gray-600 text-sm font-medium rounded-xl px-4 py-2.5 transition-all border border-gray-200 hover:border-del">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
