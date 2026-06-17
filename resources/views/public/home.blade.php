@@ -45,13 +45,22 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             @foreach($lecturers as $lecturer)
             <a href="{{ route('public.dosen.show', $lecturer->id) }}" class="bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:border-del/30 transition-all duration-200 overflow-hidden group">
-                <div class="h-48 bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden">
+                <div class="h-56 bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden">
                     @if($lecturer->photo)
-                        <img src="{{ Storage::url($lecturer->photo) }}" alt="{{ $lecturer->user->name }}" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300">
+                        <img src="{{ Storage::url($lecturer->photo) }}" alt="{{ $lecturer->user->name }}"
+                             class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                             style="object-position: 50% 35%;">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
-                            <div class="w-20 h-20 rounded-full bg-del/10 border-4 border-del/20 flex items-center justify-center">
-                                <span class="text-del font-bold text-3xl">{{ strtoupper(substr($lecturer->user->name, 0, 1)) }}</span>
+                            @php
+                                $colors = ['1e3a5f','2563eb','16a34a','7c3aed','dc2626','d97706'];
+                                $ci = ord($lecturer->user->name[0] ?? 'A') % count($colors);
+                            @endphp
+                            <div class="w-24 h-24 rounded-full flex items-center justify-center shadow-inner"
+                                 style="background-color: #{{ $colors[$ci] }}20; border: 3px solid #{{ $colors[$ci] }}40;">
+                                <span class="font-bold text-4xl" style="color: #{{ $colors[$ci] }};">
+                                    {{ strtoupper(substr($lecturer->user->name, 0, 1)) }}
+                                </span>
                             </div>
                         </div>
                     @endif
