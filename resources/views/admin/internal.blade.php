@@ -61,6 +61,8 @@
                 </span>
 
                 {{-- Tombol Edit hanya muncul jika user berhak --}}
+                {{-- Route ini sekarang satu nama saja (admin.profil.edit), dibuka untuk
+                     Dekan & Kaprodi; pembatasan rinci dijaga assertKaprodiCanEdit() --}}
                 @if($canEdit)
                     <a href="{{ route('admin.profil.edit', $lecturer->id) }}"
                        class="text-xs text-del hover:underline font-medium">
@@ -96,3 +98,4 @@
     @endforeach
 </div>
 @endsection
+

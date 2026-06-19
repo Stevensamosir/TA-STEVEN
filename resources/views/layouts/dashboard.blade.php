@@ -32,6 +32,19 @@
         }
         .sidebar-link:hover { background-color: #eff6ff; color: #003087; }
         .sidebar-link.active { background-color: #eff6ff; color: #003087; font-weight: 600; }
+
+        /* ── Cegah kursor "ngetik" (I-beam) muncul di teks biasa ──
+           Sama seperti di layout publik: hanya elemen form sungguhan yang
+           boleh menampilkan kursor I-beam. */
+        body, p, h1, h2, h3, h4, h5, h6, span, div, li, label, td, th {
+            cursor: default;
+        }
+        input, textarea, select, [contenteditable="true"] {
+            cursor: text;
+        }
+        button, a, [role="button"], summary {
+            cursor: pointer;
+        }
     </style>
     @stack('styles')
 </head>
@@ -189,5 +202,16 @@
 </div>
 
 @stack('scripts')
+<script>
+    // Toggle tampil/sembunyi password — dipakai semua form password di halaman dashboard
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const willShow = input.type === 'password';
+        input.type = willShow ? 'text' : 'password';
+        btn.querySelector('.eye-icon-open').classList.toggle('hidden', willShow);
+        btn.querySelector('.eye-icon-closed').classList.toggle('hidden', !willShow);
+    }
+</script>
 </body>
 </html>

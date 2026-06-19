@@ -164,17 +164,45 @@
 
             <!-- Grafik Performa Akademik -->
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                <div class="flex items-center justify-between mb-5">
-                    <div>
+                <div class="flex items-start justify-between mb-5 gap-3">
+                    <div class="select-none">
                         <h2 class="text-base font-bold text-gray-800">Grafik Performa Akademik</h2>
                         <p class="text-xs text-gray-400 mt-0.5">5 tahun terakhir</p>
                     </div>
-                    <div class="flex gap-3 text-xs text-gray-500">
-                        @foreach([['bg-blue-500','Penelitian'],['bg-emerald-500','Pengabdian'],['bg-violet-500','Publikasi']] as [$c,$l])
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-sm {{ $c }}"></span>{{ $l }}
-                        </span>
-                        @endforeach
+                    <div class="flex items-center gap-4 flex-wrap justify-end">
+                        {{-- Legend --}}
+                        <div class="flex gap-3 text-xs text-gray-500 select-none">
+                            @foreach([['bg-blue-500','Penelitian'],['bg-emerald-500','Pengabdian'],['bg-violet-500','Publikasi']] as [$c,$l])
+                            <span class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-sm {{ $c }}"></span>{{ $l }}
+                            </span>
+                            @endforeach
+                        </div>
+                        {{-- Toggle Bar / Line --}}
+                        <div class="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5" id="chartToggle">
+                            <button type="button" onclick="setChartType('bar')" id="btn-bar"
+                                    title="Grafik Batang"
+                                    class="chart-toggle-btn active p-1.5 rounded-md transition-all">
+                                {{-- ikon bar chart --}}
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <rect x="3"  y="12" width="4" height="9" rx="1"/>
+                                    <rect x="10" y="7"  width="4" height="14" rx="1"/>
+                                    <rect x="17" y="4"  width="4" height="17" rx="1"/>
+                                </svg>
+                            </button>
+                            <button type="button" onclick="setChartType('line')" id="btn-line"
+                                    title="Grafik Garis"
+                                    class="chart-toggle-btn p-1.5 rounded-md transition-all">
+                                {{-- ikon line chart --}}
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 17 8 11 13 14 19 6"/>
+                                    <circle cx="3"  cy="17" r="1.5" fill="currentColor" stroke="none"/>
+                                    <circle cx="8"  cy="11" r="1.5" fill="currentColor" stroke="none"/>
+                                    <circle cx="13" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+                                    <circle cx="19" cy="6"  r="1.5" fill="currentColor" stroke="none"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 @php $hasActivity = max(array_merge($researchData, $serviceData, $pubData)) > 0; @endphp
@@ -385,60 +413,106 @@ const urlTab = new URLSearchParams(window.location.search).get('tab');
 const firstWithData = urlTab || tabs.find(t => counts[t] > 0) || 'pendidikan';
 switchTab(firstWithData);
 
-// ── Chart.js ──────────────────────────────────────────────
+// ── Chart.js dengan toggle Bar / Line ─────────────────────
 @if($hasActivity ?? false)
 const ctx = document.getElementById('performaChart');
-if (ctx) {
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode(array_map('strval', $years)) !!},
-            datasets: [
-                {
-                    label: 'Penelitian',
-                    data: {!! json_encode($researchData) !!},
-                    backgroundColor: 'rgba(59,130,246,0.85)',
-                    borderRadius: 6,
-                    borderSkipped: false,
-                },
-                {
-                    label: 'Pengabdian',
-                    data: {!! json_encode($serviceData) !!},
-                    backgroundColor: 'rgba(16,185,129,0.85)',
-                    borderRadius: 6,
-                    borderSkipped: false,
-                },
-                {
-                    label: 'Publikasi',
-                    data: {!! json_encode($pubData) !!},
-                    backgroundColor: 'rgba(139,92,246,0.85)',
-                    borderRadius: 6,
-                    borderSkipped: false,
-                },
-            ]
+let performaChart = null;
+
+const chartLabels   = {!! json_encode(array_map('strval', $years)) !!};
+const rawResearch   = {!! json_encode($researchData) !!};
+const rawService    = {!! json_encode($serviceData) !!};
+const rawPub        = {!! json_encode($pubData) !!};
+
+const COLORS = {
+    research : { solid: 'rgba(59,130,246,0.85)',  border: 'rgba(59,130,246,1)',   fill: 'rgba(59,130,246,0.12)'  },
+    service  : { solid: 'rgba(16,185,129,0.85)',  border: 'rgba(16,185,129,1)',   fill: 'rgba(16,185,129,0.12)'  },
+    pub      : { solid: 'rgba(139,92,246,0.85)',  border: 'rgba(139,92,246,1)',   fill: 'rgba(139,92,246,0.12)'  },
+};
+
+const commonOptions = {
+    responsive: true,
+    plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: '#1e293b', padding: 10, cornerRadius: 8 }
+    },
+    scales: {
+        x: { grid: { display: false }, border: { display: false } },
+        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: '#f1f5f9' }, border: { display: false } }
+    }
+};
+
+function buildDatasets(type) {
+    const isBar = type === 'bar';
+    return [
+        {
+            label: 'Penelitian', data: rawResearch,
+            backgroundColor: isBar ? COLORS.research.solid : COLORS.research.fill,
+            borderColor:     COLORS.research.border,
+            borderWidth:     isBar ? 0 : 2,
+            borderRadius:    isBar ? 6 : 0,
+            borderSkipped:   false,
+            fill:            !isBar,
+            tension:         0.4,
+            pointBackgroundColor: COLORS.research.border,
+            pointRadius:     isBar ? 0 : 4,
+            pointHoverRadius: isBar ? 0 : 6,
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: '#1e293b',
-                    padding: 10,
-                    cornerRadius: 8,
-                }
-            },
-            scales: {
-                x: { grid: { display: false }, border: { display: false } },
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1, precision: 0 },
-                    grid: { color: '#f1f5f9' },
-                    border: { display: false }
-                }
-            }
-        }
+        {
+            label: 'Pengabdian', data: rawService,
+            backgroundColor: isBar ? COLORS.service.solid : COLORS.service.fill,
+            borderColor:     COLORS.service.border,
+            borderWidth:     isBar ? 0 : 2,
+            borderRadius:    isBar ? 6 : 0,
+            borderSkipped:   false,
+            fill:            !isBar,
+            tension:         0.4,
+            pointBackgroundColor: COLORS.service.border,
+            pointRadius:     isBar ? 0 : 4,
+            pointHoverRadius: isBar ? 0 : 6,
+        },
+        {
+            label: 'Publikasi', data: rawPub,
+            backgroundColor: isBar ? COLORS.pub.solid : COLORS.pub.fill,
+            borderColor:     COLORS.pub.border,
+            borderWidth:     isBar ? 0 : 2,
+            borderRadius:    isBar ? 6 : 0,
+            borderSkipped:   false,
+            fill:            !isBar,
+            tension:         0.4,
+            pointBackgroundColor: COLORS.pub.border,
+            pointRadius:     isBar ? 0 : 4,
+            pointHoverRadius: isBar ? 0 : 6,
+        },
+    ];
+}
+
+function setChartType(type) {
+    // Update tombol aktif
+    document.querySelectorAll('.chart-toggle-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + type).classList.add('active');
+
+    // Rebuild chart
+    if (performaChart) performaChart.destroy();
+    performaChart = new Chart(ctx, {
+        type,
+        data: { labels: chartLabels, datasets: buildDatasets(type) },
+        options: commonOptions,
     });
 }
+
+if (ctx) {
+    // Default: bar chart
+    setChartType('bar');
+}
 @endif
+
+// Style tombol toggle aktif
+const toggleStyle = document.createElement('style');
+toggleStyle.textContent = `
+    .chart-toggle-btn        { color: #9ca3af; }
+    .chart-toggle-btn.active { background: #fff; color: #003087; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .chart-toggle-btn:hover:not(.active) { color: #374151; }
+`;
+document.head.appendChild(toggleStyle);
 </script>
 @endpush

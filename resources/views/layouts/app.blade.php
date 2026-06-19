@@ -29,6 +29,22 @@
         }
     </script>
     @stack('styles')
+    <style>
+        /* ── Cegah kursor "ngetik" (I-beam) muncul di teks biasa ──
+           Default browser akan menampilkan kursor I-beam di semua teks yang
+           bisa di-select (h1, p, span, dll), padahal cuma kotak input yang
+           seharusnya bisa diketik. Aturan ini membatasi kursor I-beam HANYA
+           untuk elemen form sungguhan. */
+        body, p, h1, h2, h3, h4, h5, h6, span, div, li, label {
+            cursor: default;
+        }
+        input, textarea, select, [contenteditable="true"] {
+            cursor: text;
+        }
+        button, a, [role="button"], summary {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 text-gray-800" style="font-family:'Plus Jakarta Sans',sans-serif;">
 
@@ -53,10 +69,6 @@
 
             <!-- Nav Links -->
             <div class="hidden md:flex items-center gap-6">
-                <a href="{{ route('home') }}"
-                   class="text-sm font-medium transition-colors {{ request()->routeIs('home') ? 'text-del font-semibold' : 'text-gray-600 hover:text-del' }}">
-                    Beranda
-                </a>
                 <a href="{{ route('public.dosen') }}"
                    class="text-sm font-medium transition-colors {{ request()->routeIs('public.*') ? 'text-del font-semibold' : 'text-gray-600 hover:text-del' }}">
                     Dosen
@@ -66,11 +78,18 @@
             <!-- Auth -->
             <div class="flex items-center gap-3">
                 @auth
-                    @if(in_array(auth()->user()->role, ['dekan','kaprodi']))
+                    @if(auth()->user()->isDekan())
+                        {{-- Dekan → admin dashboard utama --}}
                         <a href="{{ route('admin.index') }}" class="text-sm font-medium text-del hover:underline hidden sm:block">
                             Dashboard Admin
                         </a>
+                    @elseif(auth()->user()->isKaprodi())
+                        {{-- Kaprodi → halaman Data Internal (route yg memang boleh diakses Kaprodi) --}}
+                        <a href="{{ route('admin.internal') }}" class="text-sm font-medium text-del hover:underline hidden sm:block">
+                            Dashboard Admin
+                        </a>
                     @else
+                        {{-- Dosen biasa → dashboard dosen --}}
                         <a href="{{ route('dosen.index') }}" class="text-sm font-medium text-del hover:underline hidden sm:block">
                             Dashboard
                         </a>

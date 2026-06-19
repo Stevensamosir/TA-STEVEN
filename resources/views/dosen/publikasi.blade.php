@@ -211,12 +211,80 @@
 // Simpan data DOI hasil fetch
 let doiData = null;
 
+// Bersihkan input DOI: terima URL (https://doi.org/10.xxxx/xxx) atau DOI langsung
+function cleanDoi(raw) {
+    return raw.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '').replace(/^doi:/i, '').trim();
+}
+
+// Ubah struktur JSON Crossref (message.*) jadi bentuk data yang dipakai form ini
+function parseCrossrefMessage(msg, doi) {
+    const title = msg.title && msg.title[0] ? msg.title[0] : null;
+    if (!title) return null;
+
+    let year = null;
+    if (msg.published && msg.published['date-parts'] && msg.published['date-parts'][0]) {
+        year = msg.published['date-parts'][0][0];
+    } else if (msg.created && msg.created['date-parts'] && msg.created['date-parts'][0]) {
+        year = msg.created['date-parts'][0][0];
+    }
+
+    let publisher = null;
+    if (msg['container-title'] && msg['container-title'][0]) {
+        publisher = msg['container-title'][0];
+    } else if (msg.publisher) {
+        publisher = msg.publisher;
+    } else if (msg.institution && msg.institution[0] && msg.institution[0].name) {
+        publisher = msg.institution[0].name;
+    }
+
+    const authors = (msg.author || [])
+        .map(a => `${a.given || ''} ${a.family || ''}`.trim())
+        .filter(Boolean);
+
+    return { title, year, publisher, publisher_url: `https://doi.org/${doi}`, type: msg.type || 'journal-article', authors };
+}
+
+// Percobaan 1: langsung dari browser ke Crossref.
+// Ini menghindari masalah koneksi keluar dari server lokal (firewall/SSL/cURL)
+// yang sering jadi penyebab "Gagal menghubungi Crossref API" padahal internet di
+// komputer sendiri baik-baik saja.
+async function fetchFromCrossrefDirect(doi) {
+    try {
+        const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`, {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!res.ok) return null;
+        const json = await res.json();
+        return parseCrossrefMessage(json.message || {}, doi);
+    } catch (e) {
+        return null; // kemungkinan diblokir CORS/jaringan browser — lanjut ke fallback
+    }
+}
+
+// Percobaan 2 (fallback): lewat backend Laravel /api/doi, kalau percobaan 1 gagal.
+async function fetchFromBackend(doi) {
+    try {
+        const res = await fetch(`/api/doi?doi=${encodeURIComponent(doi)}`, {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        });
+        const result = await res.json();
+        if (!res.ok || result.error) return null;
+        return result.data;
+    } catch (e) {
+        return null;
+    }
+}
+
 async function fetchDoi() {
-    const doi = document.getElementById('doi-input').value.trim();
-    if (!doi) {
+    const doiRaw = document.getElementById('doi-input').value.trim();
+    if (!doiRaw) {
         showStatus('Masukkan DOI terlebih dahulu.', 'error');
         return;
     }
+    const doi = cleanDoi(doiRaw);
 
     // Loading state
     document.getElementById('doi-icon').classList.add('hidden');
@@ -226,21 +294,17 @@ async function fetchDoi() {
     showStatus('Mencari di Crossref...', 'info');
 
     try {
-        const response = await fetch(`/api/doi?doi=${encodeURIComponent(doi)}`, {
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-            }
-        });
+        let data = await fetchFromCrossrefDirect(doi);
+        if (!data) {
+            data = await fetchFromBackend(doi);
+        }
 
-        const result = await response.json();
-
-        if (!response.ok || result.error) {
-            showStatus(result.error || 'DOI tidak ditemukan.', 'error');
+        if (!data) {
+            showStatus('DOI tidak ditemukan / tidak bisa diakses. Isi manual saja di bawah, tidak masalah.', 'error');
             return;
         }
 
-        doiData = result.data;
+        doiData = data;
 
         // Tampilkan preview
         document.getElementById('preview-title').textContent = doiData.title;
@@ -250,7 +314,7 @@ async function fetchDoi() {
         showStatus('', 'clear');
 
     } catch (e) {
-        showStatus('Gagal menghubungi server. Coba lagi.', 'error');
+        showStatus('Gagal mengambil data DOI. Isi manual saja di bawah, tidak masalah.', 'error');
     } finally {
         document.getElementById('doi-icon').classList.remove('hidden');
         document.getElementById('doi-spinner').classList.add('hidden');

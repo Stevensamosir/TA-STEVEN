@@ -86,11 +86,6 @@ Route::middleware(['auth', 'role:dekan'])->prefix('admin')->name('admin.')->grou
     Route::patch('/dosen/{id}/toggle-active',  [AdminController::class, 'toggleActive'])->name('dosen.toggle-active');
     Route::patch('/dosen/{id}/visibility',     [AdminController::class, 'toggleVisibility'])->name('dosen.visibility');
 
-    // Edit Profil Dosen oleh Dekan (semua dosen)
-    // FIX: route ini kini hanya di group Dekan, tidak duplikat
-    Route::get('/profil/{id}',  [AdminController::class, 'editProfilDosen'])->name('profil.edit');
-    Route::put('/profil/{id}',  [AdminController::class, 'updateProfilDosen'])->name('profil.update');
-
     // Hierarki & Program Studi
     Route::get('/hierarki',        [AdminController::class, 'hierarki'])->name('hierarki');
     Route::put('/hierarki/{id}',   [AdminController::class, 'updateHierarki'])->name('hierarki.update');
@@ -101,20 +96,20 @@ Route::middleware(['auth', 'role:dekan'])->prefix('admin')->name('admin.')->grou
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DATA INTERNAL — Dekan + Kaprodi
-// Dekan sudah di-cover group di atas; Kaprodi perlu akses terpisah
-// FIX: Kaprodi TIDAK lagi mendefinisikan admin.profil.edit (sudah ada di Dekan)
-//      Kaprodi edit profil dosen → akses lewat route admin.profil.edit milik Dekan
-//      tapi controller assertKaprodiCanEdit() mengizinkan Kaprodi masuk
-//      selama target dosen ada di prodinya sendiri.
+// DATA INTERNAL & EDIT PROFIL DOSEN — Dekan + Kaprodi
+// FIX (perbaikan menyeluruh): route /profil/{id} SEBELUMNYA ada di dalam grup
+// role:dekan saja, sehingga Kaprodi diblokir middleware sebelum sempat dicek
+// assertKaprodiCanEdit() di controller. Sempat dibuat route duplikat khusus
+// Kaprodi (admin.kaprodi.profil.*), tapi karena pola URL-nya identik dengan
+// punya Dekan, route itu tidak pernah benar-benar tercapai (Laravel selalu
+// mencocokkan ke route pertama yang match, yaitu milik Dekan) — duplikat itu
+// dihapus. Sekarang HANYA SATU route bernama admin.profil.edit/update yang
+// terbuka untuk Dekan & Kaprodi; pembatasan rinci (Kaprodi hanya boleh edit
+// dosen di prodinya sendiri) tetap dijaga oleh assertKaprodiCanEdit() di
+// AdminController.
 // ─────────────────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:dekan,kaprodi'])->prefix('admin')->group(function () {
-    Route::get('/internal', [AdminController::class, 'internal'])->name('admin.internal');
-});
-
-// Kaprodi: edit profil dosen di prodinya sendiri
-// Menggunakan nama route BERBEDA (admin.kaprodi.profil.*) agar tidak conflict
-Route::middleware(['auth', 'role:kaprodi'])->prefix('admin')->name('admin.kaprodi.')->group(function () {
+Route::middleware(['auth', 'role:dekan,kaprodi'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/internal',     [AdminController::class, 'internal'])->name('internal');
     Route::get('/profil/{id}',  [AdminController::class, 'editProfilDosen'])->name('profil.edit');
     Route::put('/profil/{id}',  [AdminController::class, 'updateProfilDosen'])->name('profil.update');
 });

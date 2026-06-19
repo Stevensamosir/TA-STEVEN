@@ -276,15 +276,22 @@ class AdminController extends Controller
     // Tampilkan semua dosen, tapi tombol Edit hanya untuk yang di scope masing-masing
     public function internal()
     {
-        $lecturers = Lecturer::with(['user', 'studyProgram',
-            'educations', 'researches', 'communityServices', 'publications'
-        ])->get();
-
-        // Untuk Kaprodi: kirim study_program_id prodinya agar blade bisa filter tombol Edit
         $myProdiId = null;
+
+        $query = Lecturer::with(['user', 'studyProgram',
+            'educations', 'researches', 'communityServices', 'publications'
+        ]);
+
+        // FIX: Kaprodi hanya boleh melihat data dosen di prodinya sendiri.
+        // Sebelumnya scoping hanya diterapkan di Blade (tombol Edit), sehingga
+        // Kaprodi tetap bisa melihat data internal dosen prodi lain. Sekarang
+        // scoping diterapkan di level query agar konsisten dengan RBAC.
         if (auth()->user()->isKaprodi()) {
             $myProdiId = auth()->user()->lecturer?->study_program_id;
+            $query->where('study_program_id', $myProdiId);
         }
+
+        $lecturers = $query->get();
 
         return view('admin.internal', compact('lecturers', 'myProdiId'));
     }

@@ -91,6 +91,10 @@ class DoiController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('DOI lookup gagal (Crossref)', [
+                'doi' => $doi,
+                'pesan_asli' => $e->getMessage(),
+            ]);
             return response()->json([
                 'error' => 'Gagal menghubungi Crossref API. Periksa koneksi internet.'
             ], 500);
