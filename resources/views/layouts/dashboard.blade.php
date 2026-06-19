@@ -50,9 +50,13 @@
 </head>
 <body class="bg-gray-50">
 
-<div class="flex h-screen overflow-hidden">
+<div class="flex h-screen overflow-hidden relative">
+    <!-- Overlay gelap, hanya muncul saat sidebar terbuka di mobile -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 z-30 hidden"></div>
+
     <!-- SIDEBAR -->
-    <aside class="w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm flex-shrink-0">
+    <aside id="sidebar"
+           class="fixed md:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm flex-shrink-0 -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out">
         <!-- ✅ Logo dengan fallback SVG -->
         <div class="p-5 border-b border-gray-100">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
@@ -170,12 +174,19 @@
     </aside>
 
     <!-- MAIN CONTENT -->
-    <div class="flex-1 overflow-y-auto">
-        <header class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-            <h1 class="text-lg font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h1>
-            <a href="{{ route('home') }}" class="text-sm text-del hover:underline flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                Lihat Halaman Publik
+    <div class="flex-1 overflow-y-auto min-w-0">
+        <header class="bg-white border-b border-gray-100 px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-10 gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                {{-- Tombol hamburger — hanya tampil di mobile/tablet kecil --}}
+                <button type="button" onclick="toggleSidebar()" aria-label="Buka menu navigasi"
+                        class="md:hidden p-1.5 -ml-1.5 text-gray-600 hover:bg-gray-100 rounded-lg flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <h1 class="text-base md:text-lg font-semibold text-gray-800 truncate">@yield('page-title', 'Dashboard')</h1>
+            </div>
+            <a href="{{ route('home') }}" class="text-xs sm:text-sm text-del hover:underline flex items-center gap-1 flex-shrink-0">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                <span class="hidden sm:inline">Lihat Halaman Publik</span>
             </a>
         </header>
 
@@ -212,6 +223,32 @@
         btn.querySelector('.eye-icon-open').classList.toggle('hidden', willShow);
         btn.querySelector('.eye-icon-closed').classList.toggle('hidden', !willShow);
     }
+
+    // Buka/tutup sidebar mobile (hamburger menu)
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const isOpen  = !sidebar.classList.contains('-translate-x-full');
+
+        if (isOpen) {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        } else {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+    }
+
+    // Kalau layar di-resize jadi besar (mis. putar tablet ke landscape / buka DevTools),
+    // pastikan sidebar mobile yang sempat terbuka tidak nyangkut kebuka di mode desktop
+    window.addEventListener('resize', function () {
+        if (window.innerWidth >= 768) {
+            document.getElementById('sidebarOverlay')?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    });
 </script>
 </body>
 </html>

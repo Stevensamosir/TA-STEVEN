@@ -84,6 +84,7 @@ Route::middleware(['auth', 'role:dekan'])->prefix('admin')->name('admin.')->grou
     Route::put('/dosen/{id}',                  [AdminController::class, 'updateDosen'])->name('dosen.update');
     Route::patch('/dosen/{id}/reset-password', [AdminController::class, 'resetPassword'])->name('dosen.reset-password');
     Route::patch('/dosen/{id}/toggle-active',  [AdminController::class, 'toggleActive'])->name('dosen.toggle-active');
+    Route::delete('/dosen/{id}',               [AdminController::class, 'destroyDosen'])->name('dosen.destroy');
     Route::patch('/dosen/{id}/visibility',     [AdminController::class, 'toggleVisibility'])->name('dosen.visibility');
 
     // Hierarki & Program Studi

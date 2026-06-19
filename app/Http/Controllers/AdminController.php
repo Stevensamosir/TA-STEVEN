@@ -73,8 +73,11 @@ class AdminController extends Controller
     public function dosenList()
     {
         $this->assertDekanOnly();
-        $dosens = Lecturer::with(['user', 'studyProgram'])->get();
-        return view('admin.dosen', compact('dosens'));
+        $dosens = Lecturer::with(['user', 'studyProgram'])
+            ->withCount(['educations', 'researches', 'communityServices', 'publications'])
+            ->get();
+        $activeDekanCount = User::where('role', 'dekan')->where('is_active', true)->count();
+        return view('admin.dosen', compact('dosens', 'activeDekanCount'));
     }
 
     public function createDosen()
@@ -229,6 +232,54 @@ class AdminController extends Controller
         $lecturer->user->update(['is_active' => !$lecturer->user->is_active]);
         $status = $lecturer->user->is_active ? 'diaktifkan' : 'dinonaktifkan';
         return back()->with('success', "Akun dosen berhasil $status.");
+    }
+
+    // ─── HAPUS PERMANEN DOSEN ─────────────────────────────────────
+    // Hanya untuk kasus "salah buat akun" — dosen yang BELUM punya data
+    // Tridharma sama sekali (pendidikan, penelitian, pengabdian, publikasi
+    // semuanya 0). Begitu salah satu data sudah diisi, hapus permanen
+    // diblokir di sini DAN di tombolnya (view) — harus pakai nonaktifkan
+    // supaya riwayat akademik dosen tidak hilang.
+    public function destroyDosen($id)
+    {
+        $this->assertDekanOnly();
+        $lecturer = Lecturer::with('user')
+            ->withCount(['educations', 'researches', 'communityServices', 'publications'])
+            ->findOrFail($id);
+
+        // PROTEKSI 1: tidak boleh hapus akun sendiri yang sedang login,
+        // berapa pun jumlah data Tridharma-nya. Menghapus akun sendiri saat
+        // masih login bisa membuat sesi jadi rusak / tidak ada Dekan aktif.
+        if ($lecturer->user_id === auth()->id()) {
+            return back()->withErrors([
+                'dosen' => 'Anda tidak bisa menghapus akun Anda sendiri.'
+            ]);
+        }
+
+        // PROTEKSI 2: jangan sampai sistem kehabisan akun Dekan aktif.
+        if ($lecturer->user->role === 'dekan') {
+            $activeDekanCount = User::where('role', 'dekan')->where('is_active', true)->count();
+            if ($activeDekanCount <= 1) {
+                return back()->withErrors([
+                    'dosen' => 'Tidak bisa menghapus satu-satunya akun Dekan aktif di sistem.'
+                ]);
+            }
+        }
+
+        $totalData = $lecturer->educations_count + $lecturer->researches_count
+                   + $lecturer->community_services_count + $lecturer->publications_count;
+
+        if ($totalData > 0) {
+            return back()->withErrors([
+                'dosen' => 'Dosen ini sudah memiliki data Tridharma, tidak bisa dihapus permanen. Gunakan tombol Nonaktifkan.'
+            ]);
+        }
+
+        $user = $lecturer->user;
+        $lecturer->delete();
+        $user?->delete();
+
+        return back()->with('success', 'Akun dosen berhasil dihapus permanen.');
     }
 
     public function toggleVisibility($id)
