@@ -24,6 +24,20 @@
         </p>
     </div>
 
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <form action="{{ route('admin.internal') }}" method="GET" class="relative max-w-md w-full">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+            <input type="text" name="search" value="{{ request('search') }}"
+                   placeholder="Cari nama atau kepakaran dosen..."
+                   class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
+        </form>
+        @if(request('search'))
+            <p class="text-sm text-gray-500 flex-shrink-0">
+                {{ $lecturers->count() }} hasil &middot; <a href="{{ route('admin.internal') }}" class="text-del hover:underline">Reset</a>
+            </p>
+        @endif
+    </div>
+
     @foreach($lecturers as $lecturer)
     @php
         // Tentukan apakah user yang login boleh mengedit dosen ini

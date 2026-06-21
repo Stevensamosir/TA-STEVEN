@@ -70,11 +70,21 @@ class AdminController extends Controller
     }
 
     // ─── KELOLA DOSEN (Dekan only) ───────────────────────────────────
-    public function dosenList()
+    public function dosenList(Request $request)
     {
         $this->assertDekanOnly();
         $dosens = Lecturer::with(['user', 'studyProgram'])
             ->withCount(['educations', 'researches', 'communityServices', 'publications'])
+            ->when($request->search, function ($q) use ($request) {
+                // Kondisi OR dibungkus dalam satu closure (sama seperti perbaikan
+                // di PublicController) supaya tidak bocor keluar dan tetap aman
+                // ditambah filter lain di masa depan.
+                $q->where(function ($sub) use ($request) {
+                    $sub->whereHas('user', fn($u) => $u->where('name', 'like', '%'.$request->search.'%')
+                                                         ->orWhere('email', 'like', '%'.$request->search.'%'))
+                        ->orWhereHas('studyProgram', fn($sp) => $sp->where('name', 'like', '%'.$request->search.'%'));
+                });
+            })
             ->get();
         $activeDekanCount = User::where('role', 'dekan')->where('is_active', true)->count();
         return view('admin.dosen', compact('dosens', 'activeDekanCount'));
@@ -187,6 +197,19 @@ class AdminController extends Controller
             }
         }
 
+        // PROTEKSI: jangan sampai satu-satunya Dekan aktif diturunkan rolenya
+        // lewat form Edit biasa — ini bisa membuat sistem kehilangan akses
+        // admin sama sekali tanpa pengganti. Kalau memang mau lengser, harus
+        // lewat alur "Transfer Jabatan Dekan" yang menjamin ada penerus.
+        if ($lecturer->user->role === 'dekan' && $request->role !== 'dekan') {
+            $activeDekanCount = User::where('role', 'dekan')->where('is_active', true)->count();
+            if ($activeDekanCount <= 1) {
+                return back()
+                    ->withErrors(['role' => 'Tidak bisa mengubah role satu-satunya Dekan aktif lewat form ini. Gunakan fitur "Transfer Jabatan Dekan" di halaman Profil Saya agar selalu ada penerus.'])
+                    ->withInput();
+            }
+        }
+
         // Constraint: Kaprodi maksimal 1 aktif per prodi (saat ubah role/prodi ke kaprodi)
         if ($request->role === 'kaprodi') {
             $prodiName = StudyProgram::find($request->study_program_id)?->name ?? 'prodi ini';
@@ -229,6 +252,24 @@ class AdminController extends Controller
     {
         $this->assertDekanOnly();
         $lecturer = Lecturer::with('user')->findOrFail($id);
+
+        // PROTEKSI: jangan sampai Dekan menonaktifkan akun sendiri (bisa benar-
+        // benar terkunci tidak bisa login lagi), atau menonaktifkan satu-
+        // satunya Dekan aktif lewat baris dosen lain yang kebetulan dia sendiri.
+        if ($lecturer->user_id === auth()->id() && $lecturer->user->is_active) {
+            return back()->withErrors([
+                'dosen' => 'Anda tidak bisa menonaktifkan akun Anda sendiri.'
+            ]);
+        }
+        if ($lecturer->user->role === 'dekan' && $lecturer->user->is_active) {
+            $activeDekanCount = User::where('role', 'dekan')->where('is_active', true)->count();
+            if ($activeDekanCount <= 1) {
+                return back()->withErrors([
+                    'dosen' => 'Tidak bisa menonaktifkan satu-satunya akun Dekan aktif di sistem.'
+                ]);
+            }
+        }
+
         $lecturer->user->update(['is_active' => !$lecturer->user->is_active]);
         $status = $lecturer->user->is_active ? 'diaktifkan' : 'dinonaktifkan';
         return back()->with('success', "Akun dosen berhasil $status.");
@@ -319,13 +360,66 @@ class AdminController extends Controller
     public function updateHierarki(Request $request, $id)
     {
         $this->assertDekanOnly();
-        StudyProgram::findOrFail($id)->update(['head_lecturer_id' => $request->head_lecturer_id]);
+        $prodi = StudyProgram::findOrFail($id);
+
+        $request->validate([
+            'head_lecturer_id' => 'nullable|exists:lecturers,id',
+        ]);
+
+        $newHeadId = $request->head_lecturer_id ?: null;
+
+        $newHead = null;
+        if ($newHeadId) {
+            $newHead = Lecturer::with('user')->findOrFail($newHeadId);
+
+            // Kaprodi WAJIB dosen dari prodi ini sendiri — mencegah salah pilih
+            // dosen prodi lain lewat dropdown (dropdown sudah difilter di view,
+            // ini lapisan kedua di backend).
+            if ($newHead->study_program_id !== $prodi->id) {
+                return back()->withErrors([
+                    'head_lecturer_id' => 'Kaprodi harus dipilih dari dosen yang berada di program studi ini.'
+                ]);
+            }
+            if ($newHead->user->role === 'dekan') {
+                return back()->withErrors([
+                    'head_lecturer_id' => 'Dekan tidak dapat merangkap sebagai Kaprodi.'
+                ]);
+            }
+            if (!$newHead->user->is_active) {
+                return back()->withErrors([
+                    'head_lecturer_id' => 'Tidak bisa menjadikan dosen nonaktif sebagai Kaprodi.'
+                ]);
+            }
+        }
+
+        // ── PENTING: sinkronkan dengan kolom users.role ──
+        // Sebelumnya head_lecturer_id hanya label tampilan dan TIDAK memberi
+        // akses Kaprodi sungguhan (semua pengecekan RBAC di sistem membaca
+        // users.role, bukan kolom ini). Sekarang keduanya disatukan supaya
+        // memilih Kaprodi di halaman ini benar-benar memberi akses.
+        //
+        // Turunkan SEMUA dosen ber-role kaprodi lain di prodi yang sama
+        // (bukan cuma yang sebelumnya jadi head_lecturer_id) — soalnya role
+        // kaprodi bisa juga diset terpisah lewat halaman Kelola Dosen, jadi
+        // perlu dijamin tidak ada dua Kaprodi nyangkut bersamaan di satu prodi.
+        Lecturer::where('study_program_id', $prodi->id)
+            ->whereHas('user', fn($q) => $q->where('role', 'kaprodi'))
+            ->when($newHeadId, fn($q) => $q->where('id', '!=', $newHeadId))
+            ->get()
+            ->each(fn($lec) => $lec->user->update(['role' => 'dosen']));
+
+        if ($newHead && $newHead->user->role !== 'kaprodi') {
+            $newHead->user->update(['role' => 'kaprodi']);
+        }
+
+        $prodi->update(['head_lecturer_id' => $newHeadId]);
+
         return back()->with('success', 'Kaprodi berhasil diperbarui.');
     }
 
     // ─── DATA INTERNAL (Dekan + Kaprodi) ────────────────────────────
     // Tampilkan semua dosen, tapi tombol Edit hanya untuk yang di scope masing-masing
-    public function internal()
+    public function internal(Request $request)
     {
         $myProdiId = null;
 
@@ -341,6 +435,16 @@ class AdminController extends Controller
             $myProdiId = auth()->user()->lecturer?->study_program_id;
             $query->where('study_program_id', $myProdiId);
         }
+
+        // Pencarian nama/kepakaran — diterapkan SETELAH scoping prodi di atas,
+        // dan dibungkus dalam satu closure supaya kondisi OR tidak bocor keluar
+        // dari batas prodi Kaprodi.
+        $query->when($request->search, function ($q) use ($request) {
+            $q->where(function ($sub) use ($request) {
+                $sub->whereHas('user', fn($u) => $u->where('name', 'like', '%'.$request->search.'%'))
+                    ->orWhere('expertise', 'like', '%'.$request->search.'%');
+            });
+        });
 
         $lecturers = $query->get();
 

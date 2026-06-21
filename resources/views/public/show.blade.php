@@ -167,7 +167,7 @@
                 <div class="flex items-start justify-between mb-5 gap-3">
                     <div class="select-none">
                         <h2 class="text-base font-bold text-gray-800">Grafik Performa Akademik</h2>
-                        <p class="text-xs text-gray-400 mt-0.5">5 tahun terakhir</p>
+                        <p class="text-xs text-gray-400 mt-0.5" id="chartRangeLabel">5 tahun terakhir</p>
                     </div>
                     <div class="flex items-center gap-4 flex-wrap justify-end">
                         {{-- Legend --}}
@@ -177,6 +177,19 @@
                                 <span class="w-2.5 h-2.5 rounded-sm {{ $c }}"></span>{{ $l }}
                             </span>
                             @endforeach
+                        </div>
+                        {{-- Toggle rentang waktu: 5 Tahun Terakhir / Semua Tahun (pola sama dengan
+                             SINTA yang menampilkan skor "3 tahun terakhir" berdampingan dengan skor
+                             "overall" sepanjang karier) --}}
+                        <div class="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5 text-xs" id="rangeToggle">
+                            <button type="button" onclick="setChartRange('5')" id="btn-range-5"
+                                    class="chart-toggle-btn active px-2.5 py-1 rounded-md transition-all font-medium">
+                                5 Tahun
+                            </button>
+                            <button type="button" onclick="setChartRange('all')" id="btn-range-all"
+                                    class="chart-toggle-btn px-2.5 py-1 rounded-md transition-all font-medium">
+                                Semua Tahun
+                            </button>
                         </div>
                         {{-- Toggle Bar / Line --}}
                         <div class="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5" id="chartToggle">
@@ -205,7 +218,7 @@
                         </div>
                     </div>
                 </div>
-                @php $hasActivity = max(array_merge($researchData, $serviceData, $pubData)) > 0; @endphp
+                @php $hasActivity = max(array_merge($chartAll['research'], $chartAll['service'], $chartAll['pub'])) > 0; @endphp
                 @if($hasActivity)
                     <canvas id="performaChart" height="100"></canvas>
                 @else
@@ -413,15 +426,30 @@ const urlTab = new URLSearchParams(window.location.search).get('tab');
 const firstWithData = urlTab || tabs.find(t => counts[t] > 0) || 'pendidikan';
 switchTab(firstWithData);
 
-// ── Chart.js dengan toggle Bar / Line ─────────────────────
+// ── Chart.js dengan toggle Bar/Line dan toggle Rentang Waktu ──
 @if($hasActivity ?? false)
 const ctx = document.getElementById('performaChart');
 let performaChart = null;
 
-const chartLabels   = {!! json_encode(array_map('strval', $years)) !!};
-const rawResearch   = {!! json_encode($researchData) !!};
-const rawService    = {!! json_encode($serviceData) !!};
-const rawPub        = {!! json_encode($pubData) !!};
+// Dua set data: 5 tahun terakhir (default) dan semua tahun beraktivitas
+const RANGE_DATA = {
+    '5':   {
+        labels:   {!! json_encode($chart5['years']) !!},
+        research: {!! json_encode($chart5['research']) !!},
+        service:  {!! json_encode($chart5['service']) !!},
+        pub:      {!! json_encode($chart5['pub']) !!},
+    },
+    'all': {
+        labels:   {!! json_encode($chartAll['years']) !!},
+        research: {!! json_encode($chartAll['research']) !!},
+        service:  {!! json_encode($chartAll['service']) !!},
+        pub:      {!! json_encode($chartAll['pub']) !!},
+    },
+};
+const RANGE_LABEL_TEXT = { '5': '5 tahun terakhir', 'all': 'Seluruh tahun aktivitas tercatat' };
+
+let currentType  = 'bar';
+let currentRange = '5';
 
 const COLORS = {
     research : { solid: 'rgba(59,130,246,0.85)',  border: 'rgba(59,130,246,1)',   fill: 'rgba(59,130,246,0.12)'  },
@@ -441,68 +469,51 @@ const commonOptions = {
     }
 };
 
-function buildDatasets(type) {
+function buildDatasets(type, data) {
     const isBar = type === 'bar';
-    return [
-        {
-            label: 'Penelitian', data: rawResearch,
-            backgroundColor: isBar ? COLORS.research.solid : COLORS.research.fill,
-            borderColor:     COLORS.research.border,
-            borderWidth:     isBar ? 0 : 2,
-            borderRadius:    isBar ? 6 : 0,
-            borderSkipped:   false,
-            fill:            !isBar,
-            tension:         0.4,
-            pointBackgroundColor: COLORS.research.border,
-            pointRadius:     isBar ? 0 : 4,
-            pointHoverRadius: isBar ? 0 : 6,
-        },
-        {
-            label: 'Pengabdian', data: rawService,
-            backgroundColor: isBar ? COLORS.service.solid : COLORS.service.fill,
-            borderColor:     COLORS.service.border,
-            borderWidth:     isBar ? 0 : 2,
-            borderRadius:    isBar ? 6 : 0,
-            borderSkipped:   false,
-            fill:            !isBar,
-            tension:         0.4,
-            pointBackgroundColor: COLORS.service.border,
-            pointRadius:     isBar ? 0 : 4,
-            pointHoverRadius: isBar ? 0 : 6,
-        },
-        {
-            label: 'Publikasi', data: rawPub,
-            backgroundColor: isBar ? COLORS.pub.solid : COLORS.pub.fill,
-            borderColor:     COLORS.pub.border,
-            borderWidth:     isBar ? 0 : 2,
-            borderRadius:    isBar ? 6 : 0,
-            borderSkipped:   false,
-            fill:            !isBar,
-            tension:         0.4,
-            pointBackgroundColor: COLORS.pub.border,
-            pointRadius:     isBar ? 0 : 4,
-            pointHoverRadius: isBar ? 0 : 6,
-        },
-    ];
+    const mk = (label, key) => ({
+        label, data: data[key],
+        backgroundColor: isBar ? COLORS[key].solid : COLORS[key].fill,
+        borderColor:     COLORS[key].border,
+        borderWidth:     isBar ? 0 : 2,
+        borderRadius:    isBar ? 6 : 0,
+        borderSkipped:   false,
+        fill:            !isBar,
+        tension:         0.4,
+        pointBackgroundColor: COLORS[key].border,
+        pointRadius:     isBar ? 0 : 4,
+        pointHoverRadius: isBar ? 0 : 6,
+    });
+    return [mk('Penelitian', 'research'), mk('Pengabdian', 'service'), mk('Publikasi', 'pub')];
 }
 
-function setChartType(type) {
-    // Update tombol aktif
-    document.querySelectorAll('.chart-toggle-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-' + type).classList.add('active');
-
-    // Rebuild chart
+function rebuildChart() {
+    const data = RANGE_DATA[currentRange];
     if (performaChart) performaChart.destroy();
     performaChart = new Chart(ctx, {
-        type,
-        data: { labels: chartLabels, datasets: buildDatasets(type) },
+        type: currentType,
+        data: { labels: data.labels, datasets: buildDatasets(currentType, data) },
         options: commonOptions,
     });
 }
 
+function setChartType(type) {
+    currentType = type;
+    document.querySelectorAll('#chartToggle .chart-toggle-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + type).classList.add('active');
+    rebuildChart();
+}
+
+function setChartRange(range) {
+    currentRange = range;
+    document.querySelectorAll('#rangeToggle .chart-toggle-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-range-' + range).classList.add('active');
+    document.getElementById('chartRangeLabel').textContent = RANGE_LABEL_TEXT[range];
+    rebuildChart();
+}
+
 if (ctx) {
-    // Default: bar chart
-    setChartType('bar');
+    rebuildChart();
 }
 @endif
 

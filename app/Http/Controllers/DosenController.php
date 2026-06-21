@@ -31,22 +31,34 @@ class DosenController extends Controller
             'publikasi'  => $lecturer->publications->count(),
         ];
 
-        // ── Data chart dashboard: 5 tahun terakhir ──
+        // ── Data chart dashboard: dua mode, sama seperti grafik publik ──
+        // (5 Tahun Terakhir / Semua Tahun) supaya riwayat dosen senior tidak
+        // ikut terpotong window tetap.
         $currentYear = (int) date('Y');
-        $chartYears  = range($currentYear - 4, $currentYear);
+        $chartYears5 = range($currentYear - 4, $currentYear);
 
-        $chartData = [
-            'years'    => array_map('strval', $chartYears),
-            'penelitian' => collect($chartYears)->map(
-                fn($y) => $lecturer->researches->where('year', $y)->count()
-            )->values()->toArray(),
-            'pengabdian' => collect($chartYears)->map(
-                fn($y) => $lecturer->communityServices->where('year', $y)->count()
-            )->values()->toArray(),
-            'publikasi' => collect($chartYears)->map(
-                fn($y) => $lecturer->publications->where('year', $y)->count()
-            )->values()->toArray(),
-        ];
+        $allActivityYears = collect()
+            ->merge($lecturer->researches->pluck('year'))
+            ->merge($lecturer->communityServices->pluck('year'))
+            ->merge($lecturer->publications->pluck('year'))
+            ->filter()->unique()->sort()->values();
+
+        $chartYearsAll = $allActivityYears->isNotEmpty()
+            ? range($allActivityYears->first(), max($allActivityYears->last(), $currentYear))
+            : $chartYears5;
+
+        $buildChart = function ($years) use ($lecturer) {
+            return [
+                'years'      => array_map('strval', $years),
+                'penelitian' => collect($years)->map(fn($y) => $lecturer->researches->where('year', $y)->count())->values()->toArray(),
+                'pengabdian' => collect($years)->map(fn($y) => $lecturer->communityServices->where('year', $y)->count())->values()->toArray(),
+                'publikasi'  => collect($years)->map(fn($y) => $lecturer->publications->where('year', $y)->count())->values()->toArray(),
+            ];
+        };
+
+        $chartData5   = $buildChart($chartYears5);
+        $chartDataAll = $buildChart($chartYearsAll);
+        $chartData    = $chartData5; // tetap disediakan untuk kompatibilitas
 
         // ── Aktivitas terbaru (5 item) ──
         $recentActivities = collect()
@@ -63,7 +75,7 @@ class DosenController extends Controller
             ->take(5)
             ->values();
 
-        return view('dosen.index', compact('lecturer', 'stats', 'chartData', 'recentActivities'));
+        return view('dosen.index', compact('lecturer', 'stats', 'chartData', 'chartData5', 'chartDataAll', 'recentActivities'));
     }
 
     // ─── PROFIL ──────────────────────────────────────────────

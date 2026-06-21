@@ -28,14 +28,17 @@
                         class="w-full pl-10 pr-4 py-3 rounded-xl text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
                         placeholder="Cari nama dosen atau kepakaran...">
                 </div>
-                <select name="prodi" class="px-4 py-3 rounded-xl text-gray-800 text-sm focus:outline-none bg-white min-w-[160px]">
-                    <option value="">Semua Prodi</option>
-                    @foreach($studyPrograms as $prodi)
-                        <option value="{{ $prodi->id }}" {{ request('prodi') == $prodi->id ? 'selected' : '' }}>
-                            {{ $prodi->name }}
-                        </option>
-                    @endforeach
-                </select>
+                <div class="relative min-w-[160px]">
+                    <select name="prodi" class="w-full appearance-none pl-4 pr-9 py-3 rounded-xl text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white/50 bg-white cursor-pointer">
+                        <option value="">Semua Prodi</option>
+                        @foreach($studyPrograms as $prodi)
+                            <option value="{{ $prodi->id }}" {{ request('prodi') == $prodi->id ? 'selected' : '' }}>
+                                {{ $prodi->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
                 <button type="submit" class="bg-white text-del font-semibold px-6 py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm shadow">
                     Cari
                 </button>

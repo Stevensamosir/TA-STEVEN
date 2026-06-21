@@ -73,26 +73,39 @@
 
         <!-- Chart Aktivitas -->
         <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-5">
-            <div class="flex items-center justify-between mb-5">
+            <div class="flex items-start justify-between mb-5 gap-3 flex-wrap">
                 <div>
                     <h3 class="font-semibold text-gray-800 text-sm">Grafik Aktivitas Akademik</h3>
-                    <p class="text-xs text-gray-400 mt-0.5">5 tahun terakhir</p>
+                    <p class="text-xs text-gray-400 mt-0.5" id="dashChartRangeLabel">5 tahun terakhir</p>
                 </div>
-                <!-- Legend -->
-                <div class="flex gap-3">
-                    @foreach([['bg-indigo-500','Penelitian'],['bg-emerald-500','Pengabdian'],['bg-violet-500','Publikasi']] as [$c,$l])
-                    <span class="flex items-center gap-1.5 text-xs text-gray-500">
-                        <span class="w-2.5 h-2.5 rounded-sm {{ $c }}"></span>{{ $l }}
-                    </span>
-                    @endforeach
+                <div class="flex items-center gap-3 flex-wrap">
+                    <!-- Legend -->
+                    <div class="flex gap-3">
+                        @foreach([['bg-indigo-500','Penelitian'],['bg-emerald-500','Pengabdian'],['bg-violet-500','Publikasi']] as [$c,$l])
+                        <span class="flex items-center gap-1.5 text-xs text-gray-500">
+                            <span class="w-2.5 h-2.5 rounded-sm {{ $c }}"></span>{{ $l }}
+                        </span>
+                        @endforeach
+                    </div>
+                    <!-- Toggle rentang waktu -->
+                    <div class="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5 text-xs">
+                        <button type="button" onclick="setDashChartRange('5')" id="dash-btn-range-5"
+                                class="dash-range-btn px-2.5 py-1 rounded-md transition-all font-medium bg-white text-del shadow-sm">
+                            5 Tahun
+                        </button>
+                        <button type="button" onclick="setDashChartRange('all')" id="dash-btn-range-all"
+                                class="dash-range-btn px-2.5 py-1 rounded-md transition-all font-medium text-gray-400">
+                            Semua Tahun
+                        </button>
+                    </div>
                 </div>
             </div>
 
             @php
                 $allZero = max(array_merge(
-                    $chartData['penelitian'],
-                    $chartData['pengabdian'],
-                    $chartData['publikasi']
+                    $chartDataAll['penelitian'],
+                    $chartDataAll['pengabdian'],
+                    $chartDataAll['publikasi']
                 )) === 0;
             @endphp
 
@@ -176,71 +189,69 @@
 <script>
 @if(!$allZero)
 const ctx = document.getElementById('dashboardChart');
-if (ctx) {
-    new Chart(ctx, {
+let dashboardChart = null;
+let dashCurrentRange = '5';
+
+const DASH_RANGE_DATA = {
+    '5':   {
+        labels: {!! json_encode($chartData5['years']) !!},
+        penelitian: {!! json_encode($chartData5['penelitian']) !!},
+        pengabdian: {!! json_encode($chartData5['pengabdian']) !!},
+        publikasi:  {!! json_encode($chartData5['publikasi']) !!},
+    },
+    'all': {
+        labels: {!! json_encode($chartDataAll['years']) !!},
+        penelitian: {!! json_encode($chartDataAll['penelitian']) !!},
+        pengabdian: {!! json_encode($chartDataAll['pengabdian']) !!},
+        publikasi:  {!! json_encode($chartDataAll['publikasi']) !!},
+    },
+};
+const DASH_RANGE_LABEL = { '5': '5 tahun terakhir', 'all': 'Seluruh tahun aktivitas tercatat' };
+
+function buildDashDatasets(data) {
+    return [
+        { label: 'Penelitian', data: data.penelitian, borderColor: 'rgb(99,102,241)', backgroundColor: 'rgba(99,102,241,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.4, fill: true },
+        { label: 'Pengabdian', data: data.pengabdian, borderColor: 'rgb(16,185,129)', backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.4, fill: true },
+        { label: 'Publikasi',  data: data.publikasi,  borderColor: 'rgb(139,92,246)', backgroundColor: 'rgba(139,92,246,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.4, fill: true },
+    ];
+}
+
+function rebuildDashChart() {
+    const data = DASH_RANGE_DATA[dashCurrentRange];
+    if (dashboardChart) dashboardChart.destroy();
+    dashboardChart = new Chart(ctx, {
         type: 'line',
-        data: {
-            labels: {!! json_encode($chartData['years']) !!},
-            datasets: [
-                {
-                    label: 'Penelitian',
-                    data: {!! json_encode($chartData['penelitian']) !!},
-                    borderColor: 'rgb(99,102,241)',
-                    backgroundColor: 'rgba(99,102,241,0.08)',
-                    borderWidth: 2.5,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0.4,
-                    fill: true,
-                },
-                {
-                    label: 'Pengabdian',
-                    data: {!! json_encode($chartData['pengabdian']) !!},
-                    borderColor: 'rgb(16,185,129)',
-                    backgroundColor: 'rgba(16,185,129,0.08)',
-                    borderWidth: 2.5,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0.4,
-                    fill: true,
-                },
-                {
-                    label: 'Publikasi',
-                    data: {!! json_encode($chartData['publikasi']) !!},
-                    borderColor: 'rgb(139,92,246)',
-                    backgroundColor: 'rgba(139,92,246,0.08)',
-                    borderWidth: 2.5,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0.4,
-                    fill: true,
-                },
-            ]
-        },
+        data: { labels: data.labels, datasets: buildDashDatasets(data) },
         options: {
             responsive: true,
             plugins: {
                 legend: { display: false },
-                tooltip: {
-                    backgroundColor: '#1e293b',
-                    padding: 10,
-                    cornerRadius: 8,
-                    mode: 'index',
-                    intersect: false,
-                }
+                tooltip: { backgroundColor: '#1e293b', padding: 10, cornerRadius: 8, mode: 'index', intersect: false }
             },
             scales: {
                 x: { grid: { display: false }, border: { display: false } },
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1, precision: 0 },
-                    grid: { color: '#f1f5f9' },
-                    border: { display: false }
-                }
+                y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: '#f1f5f9' }, border: { display: false } }
             },
             interaction: { mode: 'index', intersect: false },
         }
     });
+}
+
+function setDashChartRange(range) {
+    dashCurrentRange = range;
+    document.querySelectorAll('.dash-range-btn').forEach(b => {
+        b.classList.remove('bg-white', 'text-del', 'shadow-sm');
+        b.classList.add('text-gray-400');
+    });
+    const activeBtn = document.getElementById('dash-btn-range-' + range);
+    activeBtn.classList.remove('text-gray-400');
+    activeBtn.classList.add('bg-white', 'text-del', 'shadow-sm');
+    document.getElementById('dashChartRangeLabel').textContent = DASH_RANGE_LABEL[range];
+    rebuildDashChart();
+}
+
+if (ctx) {
+    rebuildDashChart();
 }
 @endif
 </script>

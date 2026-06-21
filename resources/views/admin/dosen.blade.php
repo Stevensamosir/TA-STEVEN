@@ -12,12 +12,26 @@
     @endif
 
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-        <p class="text-sm text-gray-500">Total: <strong>{{ $dosens->count() }}</strong> dosen</p>
+        <p class="text-sm text-gray-500">
+            @if(request('search'))
+                Hasil untuk &ldquo;{{ request('search') }}&rdquo;: <strong>{{ $dosens->count() }}</strong> dosen
+                &middot; <a href="{{ route('admin.dosen') }}" class="text-del hover:underline">Reset</a>
+            @else
+                Total: <strong>{{ $dosens->count() }}</strong> dosen
+            @endif
+        </p>
         <a href="{{ route('admin.dosen.create') }}" class="bg-del text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-del-light transition-colors flex items-center justify-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Tambah Dosen
         </a>
     </div>
+
+    <form action="{{ route('admin.dosen') }}" method="GET" class="relative max-w-md">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+        <input type="text" name="search" value="{{ request('search') }}"
+               placeholder="Cari nama, email, atau program studi..."
+               class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
+    </form>
 
     @php
         // Hitung sekali di sini supaya tidak duplikat logika antara versi tabel & versi kartu
@@ -26,16 +40,28 @@
                        + $d->community_services_count + $d->publications_count;
             $isSelf      = $d->user_id === auth()->id();
             $isLastDekan = $d->user->role === 'dekan' && $activeDekanCount <= 1;
+
             $hapusLocked = $totalData > 0 || $isSelf || $isLastDekan;
             $hapusLockReason = $isSelf
                 ? 'Anda tidak bisa menghapus akun Anda sendiri.'
                 : ($isLastDekan
                     ? 'Tidak bisa menghapus satu-satunya akun Dekan aktif.'
                     : 'Dosen ini sudah punya data Tridharma — gunakan Nonaktifkan.');
+
+            // Status (Aktif/Nonaktif) hanya dikunci kalau akunnya SEDANG aktif
+            // dan mau di-nonaktifkan (mengaktifkan kembali akun yang nonaktif
+            // selalu boleh, tidak ada risiko mengunci diri sendiri).
+            $statusLocked = $d->user->is_active && ($isSelf || $isLastDekan);
+            $statusLockReason = $isSelf
+                ? 'Anda tidak bisa menonaktifkan akun Anda sendiri.'
+                : 'Tidak bisa menonaktifkan satu-satunya akun Dekan aktif.';
+
             return [
                 'd' => $d,
                 'hapusLocked' => $hapusLocked,
                 'hapusLockReason' => $hapusLockReason,
+                'statusLocked' => $statusLocked,
+                'statusLockReason' => $statusLockReason,
             ];
         });
     @endphp
@@ -71,14 +97,21 @@
                             </span>
                         </td>
                         <td class="px-5 py-3">
-                            <form action="{{ route('admin.dosen.toggle-active', $d->id) }}" method="POST">
-                                @csrf @method('PATCH')
-                                <button type="submit"
-                                    class="text-xs font-medium px-2.5 py-1 rounded-full
-                                        {{ $d->user->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600' }}">
-                                    {{ $d->user->is_active ? '✓ Aktif' : '✗ Nonaktif' }}
-                                </button>
-                            </form>
+                            @if($row['statusLocked'])
+                                <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-green-50 text-green-700/60 cursor-not-allowed"
+                                      title="{{ $row['statusLockReason'] }}">
+                                    ✓ Aktif
+                                </span>
+                            @else
+                                <form action="{{ route('admin.dosen.toggle-active', $d->id) }}" method="POST">
+                                    @csrf @method('PATCH')
+                                    <button type="submit"
+                                        class="text-xs font-medium px-2.5 py-1 rounded-full
+                                            {{ $d->user->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600' }}">
+                                        {{ $d->user->is_active ? '✓ Aktif' : '✗ Nonaktif' }}
+                                    </button>
+                                </form>
+                            @endif
                         </td>
                         <td class="px-5 py-3">
                             <form action="{{ route('admin.dosen.visibility', $d->id) }}" method="POST">
@@ -133,14 +166,21 @@
             </div>
 
             <div class="flex flex-wrap gap-2">
-                <form action="{{ route('admin.dosen.toggle-active', $d->id) }}" method="POST">
-                    @csrf @method('PATCH')
-                    <button type="submit"
-                        class="text-xs font-medium px-2.5 py-1 rounded-full
-                            {{ $d->user->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600' }}">
-                        {{ $d->user->is_active ? '✓ Aktif' : '✗ Nonaktif' }}
-                    </button>
-                </form>
+                @if($row['statusLocked'])
+                    <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-green-50 text-green-700/60 cursor-not-allowed"
+                          title="{{ $row['statusLockReason'] }}">
+                        ✓ Aktif
+                    </span>
+                @else
+                    <form action="{{ route('admin.dosen.toggle-active', $d->id) }}" method="POST">
+                        @csrf @method('PATCH')
+                        <button type="submit"
+                            class="text-xs font-medium px-2.5 py-1 rounded-full
+                                {{ $d->user->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600' }}">
+                            {{ $d->user->is_active ? '✓ Aktif' : '✗ Nonaktif' }}
+                        </button>
+                    </form>
+                @endif
                 <form action="{{ route('admin.dosen.visibility', $d->id) }}" method="POST">
                     @csrf @method('PATCH')
                     <button type="submit"
