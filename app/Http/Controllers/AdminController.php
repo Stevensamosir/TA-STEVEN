@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Lecturer;
 use App\Models\StudyProgram;
 use App\Models\Publication;
+use App\Models\Research;
+use App\Models\CommunityService;
 
 class AdminController extends Controller
 {
@@ -66,7 +68,33 @@ class AdminController extends Controller
             'total_publikasi' => Publication::count(),
         ];
         $recentDosen = Lecturer::with('user', 'studyProgram')->latest()->take(5)->get();
-        return view('admin.index', compact('stats', 'recentDosen'));
+
+        // Chart data admin: agregasi seluruh dosen
+        $currentYear = (int) date('Y');
+        $activityYears = collect()
+            ->merge(Research::distinct()->pluck('year'))
+            ->merge(CommunityService::distinct()->pluck('year'))
+            ->merge(Publication::distinct()->pluck('year'))
+            ->filter()->unique()->sort()->values();
+
+        $yearsAll = $activityYears->isNotEmpty()
+            ? range($activityYears->first(), max($activityYears->last(), $currentYear))
+            : range($currentYear - 4, $currentYear);
+
+        $buildAdminChart = function ($years) {
+            return [
+                'years'      => array_map('strval', $years),
+                'penelitian' => array_map(fn($y) => Research::where('year', $y)->count(), $years),
+                'pengabdian' => array_map(fn($y) => CommunityService::where('year', $y)->count(), $years),
+                'publikasi'  => array_map(fn($y) => Publication::where('year', $y)->count(), $years),
+            ];
+        };
+
+        $adminChart5   = $buildAdminChart(range($currentYear - 4, $currentYear));
+        $adminChart10  = $buildAdminChart(range($currentYear - 9, $currentYear));
+        $adminChartAll = $buildAdminChart($yearsAll);
+
+        return view('admin.index', compact('stats', 'recentDosen', 'adminChart5', 'adminChart10', 'adminChartAll'));
     }
 
     // ─── KELOLA DOSEN (Dekan only) ───────────────────────────────────
@@ -427,18 +455,13 @@ class AdminController extends Controller
             'educations', 'researches', 'communityServices', 'publications'
         ]);
 
-        // FIX: Kaprodi hanya boleh melihat data dosen di prodinya sendiri.
-        // Sebelumnya scoping hanya diterapkan di Blade (tombol Edit), sehingga
-        // Kaprodi tetap bisa melihat data internal dosen prodi lain. Sekarang
-        // scoping diterapkan di level query agar konsisten dengan RBAC.
+        // Kaprodi: scope ke prodi sendiri saja
         if (auth()->user()->isKaprodi()) {
             $myProdiId = auth()->user()->lecturer?->study_program_id;
             $query->where('study_program_id', $myProdiId);
         }
 
-        // Pencarian nama/kepakaran — diterapkan SETELAH scoping prodi di atas,
-        // dan dibungkus dalam satu closure supaya kondisi OR tidak bocor keluar
-        // dari batas prodi Kaprodi.
+        // Filter pencarian nama / kepakaran
         $query->when($request->search, function ($q) use ($request) {
             $q->where(function ($sub) use ($request) {
                 $sub->whereHas('user', fn($u) => $u->where('name', 'like', '%'.$request->search.'%'))
@@ -446,17 +469,31 @@ class AdminController extends Controller
             });
         });
 
-        $lecturers = $query->get();
+        // Filter prodi (Dekan only — Kaprodi sudah terkunci ke prodinya)
+        if (auth()->user()->isDekan() && $request->filled('prodi')) {
+            $query->where('study_program_id', $request->prodi);
+        }
 
-        return view('admin.internal', compact('lecturers', 'myProdiId'));
+        // Filter role
+        $query->when($request->filled('role'), function ($q) use ($request) {
+            $q->whereHas('user', fn($u) => $u->where('role', $request->role));
+        });
+
+        $lecturers    = $query->orderBy('study_program_id')->get();
+        $studyPrograms = \App\Models\StudyProgram::orderBy('name')->get();
+
+        return view('admin.internal', compact('lecturers', 'myProdiId', 'studyPrograms'));
     }
 
     // ─── KELOLA PRODI (Dekan only) ───────────────────────────────────
     public function prodiList()
     {
         $this->assertDekanOnly();
-        $studyPrograms = StudyProgram::withCount('lecturers')->get();
-        return view('admin.prodi', compact('studyPrograms'));
+        $studyPrograms = StudyProgram::with(['headLecturer.user'])->withCount('lecturers')->get();
+        $lecturers     = \App\Models\Lecturer::with('user')
+                            ->whereHas('user', fn($u) => $u->where('is_active', true))
+                            ->get();
+        return view('admin.prodi', compact('studyPrograms', 'lecturers'));
     }
 
     public function storeProdi(Request $request)

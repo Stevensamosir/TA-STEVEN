@@ -26,7 +26,9 @@ class PublicController extends Controller
                 $q->where(function ($sub) use ($request) {
                     $sub->whereHas('user', fn($u) => $u->where('name', 'like', '%'.$request->search.'%'))
                         ->orWhere('expertise', 'like', '%'.$request->search.'%')
-                        ->orWhere('jabatan_fungsional', 'like', '%'.$request->search.'%');
+                        ->orWhere('jabatan_fungsional', 'like', '%'.$request->search.'%')
+                        ->orWhere('alias', 'like', '%'.$request->search.'%')
+                        ->orWhereHas('studyProgram', fn($sp) => $sp->where('name', 'like', '%'.$request->search.'%'));
                 });
             })
             ->when($request->prodi, fn($q) => $q->where('study_program_id', $request->prodi))
@@ -39,10 +41,10 @@ class PublicController extends Controller
     {
         $lecturer = Lecturer::with([
             'user', 'studyProgram',
-            'educations'        => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
-            'researches'        => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
-            'communityServices' => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
-            'publications'      => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
+            'educations'        => fn($q) => $q->orderByDesc('year'),
+            'researches'        => fn($q) => $q->orderByDesc('year'),
+            'communityServices' => fn($q) => $q->orderByDesc('year'),
+            'publications'      => fn($q) => $q->orderByDesc('year'),
         ])->where('is_public', true)->findOrFail($id);
 
         // ── Tahun filter publikasi ────────────────────────────────

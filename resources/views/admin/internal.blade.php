@@ -24,19 +24,39 @@
         </p>
     </div>
 
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-        <form action="{{ route('admin.internal') }}" method="GET" class="relative max-w-md w-full">
+    <form action="{{ route('admin.internal') }}" method="GET" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        <!-- Search -->
+        <div class="relative flex-1 max-w-md">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
             <input type="text" name="search" value="{{ request('search') }}"
                    placeholder="Cari nama atau kepakaran dosen..."
                    class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
-        </form>
-        @if(request('search'))
-            <p class="text-sm text-gray-500 flex-shrink-0">
-                {{ $lecturers->count() }} hasil &middot; <a href="{{ route('admin.internal') }}" class="text-del hover:underline">Reset</a>
-            </p>
+        </div>
+        <!-- Filter Prodi -->
+        <select name="prodi" class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 bg-white">
+            <option value="">Semua Program Studi</option>
+            @foreach($studyPrograms ?? [] as $sp)
+                <option value="{{ $sp->id }}" {{ request('prodi') == $sp->id ? 'selected' : '' }}>
+                    {{ $sp->name }}
+                </option>
+            @endforeach
+        </select>
+        <!-- Filter Role -->
+        <select name="role" class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 bg-white">
+            <option value="">Semua Role</option>
+            <option value="dosen"   {{ request('role') == 'dosen'   ? 'selected' : '' }}>Dosen</option>
+            <option value="kaprodi" {{ request('role') == 'kaprodi' ? 'selected' : '' }}>Kaprodi</option>
+            <option value="dekan"   {{ request('role') == 'dekan'   ? 'selected' : '' }}>Dekan</option>
+        </select>
+        <button type="submit" class="bg-del text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-del-light transition-colors whitespace-nowrap">
+            Filter
+        </button>
+        @if(request()->hasAny(['search','prodi','role']))
+            <a href="{{ route('admin.internal') }}" class="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors whitespace-nowrap">
+                Reset
+            </a>
         @endif
-    </div>
+    </form>
 
     @foreach($lecturers as $lecturer)
     @php
@@ -90,22 +110,22 @@
             <div class="bg-blue-50 rounded-xl p-3 text-center">
                 <div class="font-bold text-del">{{ $lecturer->educations->count() }}</div>
                 <div class="text-xs text-gray-500">Pendidikan</div>
-                <div class="text-xs text-gray-400">{{ $lecturer->educations->where('visibility','private')->count() }} internal</div>
+
             </div>
             <div class="bg-indigo-50 rounded-xl p-3 text-center">
                 <div class="font-bold text-indigo-700">{{ $lecturer->researches->count() }}</div>
                 <div class="text-xs text-gray-500">Penelitian</div>
-                <div class="text-xs text-gray-400">{{ $lecturer->researches->where('visibility','private')->count() }} internal</div>
+
             </div>
             <div class="bg-green-50 rounded-xl p-3 text-center">
                 <div class="font-bold text-green-700">{{ $lecturer->communityServices->count() }}</div>
                 <div class="text-xs text-gray-500">Pengabdian</div>
-                <div class="text-xs text-gray-400">{{ $lecturer->communityServices->where('visibility','private')->count() }} internal</div>
+
             </div>
             <div class="bg-purple-50 rounded-xl p-3 text-center">
                 <div class="font-bold text-purple-700">{{ $lecturer->publications->count() }}</div>
                 <div class="text-xs text-gray-500">Publikasi</div>
-                <div class="text-xs text-gray-400">{{ $lecturer->publications->where('visibility','private')->count() }} internal</div>
+
             </div>
         </div>
     </div>

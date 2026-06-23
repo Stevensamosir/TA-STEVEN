@@ -1,0 +1,24 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('lecturers', function (Blueprint $table) {
+            // Inisial/alias dosen (contoh: RCH, OPH, RIS)
+            // Dipakai untuk pencarian cepat di halaman publik
+            $table->string('alias', 10)->nullable()->after('nidn');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('lecturers', function (Blueprint $table) {
+            $table->dropColumn('alias');
+        });
+    }
+};

@@ -3,167 +3,170 @@
 @section('page-title', 'Edit Profil')
 
 @section('content')
-<div class="pt-4 max-w-2xl">
-    <div class="bg-white rounded-2xl border border-gray-100 p-6">
-        <form action="{{ route('dosen.profil.update') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
-            @csrf @method('PUT')
+<div class="pt-4">
 
-            <!-- Foto -->
-            <div class="flex items-center gap-6 pb-5 border-b border-gray-100">
-                <div class="w-20 h-20 rounded-2xl bg-blue-50 border-2 border-del/20 flex items-center justify-center overflow-hidden">
-                    @if($lecturer->photo)
-                        <img src="{{ Storage::url($lecturer->photo) }}" class="w-full h-full object-cover">
-                    @else
-                        <span class="text-del text-2xl font-bold">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
-                    @endif
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Foto Profil</label>
-                    <input type="file" name="photo" accept="image/*" class="text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-blue-50 file:text-del file:text-sm file:font-medium hover:file:bg-blue-100 cursor-pointer">
-                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, maks. 2MB</p>
-                </div>
+    {{-- Grid: 2 kolom untuk Dekan (profil kiri, transfer jabatan kanan), 1 kolom untuk Dosen/Kaprodi --}}
+    <div class="{{ auth()->user()->isDekan() ? 'grid grid-cols-1 xl:grid-cols-3 gap-6 items-start' : 'max-w-2xl' }}">
+
+        {{-- ── Kolom Kiri / Utama: Form Edit Profil ── --}}
+        <div class="{{ auth()->user()->isDekan() ? 'xl:col-span-2' : '' }}">
+            <div class="bg-white rounded-2xl border border-gray-100 p-6">
+                <form action="{{ route('dosen.profil.update') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+                    @csrf @method('PUT')
+
+                    {{-- Foto --}}
+                    <div class="flex items-center gap-6 pb-5 border-b border-gray-100">
+                        <div class="w-20 h-20 rounded-2xl bg-blue-50 border-2 border-del/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            @if($lecturer->photo)
+                                <img src="{{ Storage::url($lecturer->photo) }}" class="w-full h-full object-cover">
+                            @else
+                                <span class="text-del text-2xl font-bold">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                            @endif
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Foto Profil</label>
+                            <input type="file" name="photo" accept="image/jpeg,image/png"
+                                class="text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-blue-50 file:text-del file:text-sm file:font-medium hover:file:bg-blue-100 cursor-pointer">
+                            <p class="text-xs text-gray-400 mt-1">JPG, PNG, maks. 4MB</p>
+                        </div>
+                    </div>
+
+                    {{-- Nama --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Lengkap</label>
+                        <input type="text" name="name" value="{{ old('name', auth()->user()->name) }}"
+                            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
+                    </div>
+
+                    {{-- Email --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <input type="email" name="email" value="{{ old('email', auth()->user()->email) }}"
+                                class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Email ini akan ditampilkan di profil publik Anda</p>
+                        @error('email')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- NIDN --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">NIDN</label>
+                        <input type="text" name="nidn" value="{{ old('nidn', $lecturer->nidn) }}"
+                            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del"
+                            placeholder="10 digit NIDN">
+                    </div>
+
+                    {{-- Jabatan Fungsional --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Jabatan Fungsional
+                            <span class="text-xs text-gray-400 font-normal ml-1">(Sesuai SK Dikti)</span>
+                        </label>
+                        <select name="jabatan_fungsional"
+                            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del bg-white">
+                            <option value="">— Pilih Jabatan Fungsional —</option>
+                            @foreach(App\Models\Lecturer::jabatanFungsionalOptions() as $jf)
+                                <option value="{{ $jf }}" {{ old('jabatan_fungsional', $lecturer->jabatan_fungsional) === $jf ? 'selected' : '' }}>
+                                    {{ $jf }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-400 mt-1">Berdasarkan Permendikbud No. 92 Tahun 2014</p>
+                    </div>
+
+                    {{-- Kepakaran --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Kepakaran / Bidang Keahlian</label>
+                        <textarea name="expertise" rows="3"
+                            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del resize-none"
+                            placeholder="Contoh: Rekayasa Perangkat Lunak, Machine Learning, Web Development">{{ old('expertise', $lecturer->expertise) }}</textarea>
+                    </div>
+
+                    {{-- Visibilitas Profil --}}
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">Profil Publik</p>
+                                <p class="text-xs text-gray-500 mt-0.5">Aktifkan agar profil terlihat oleh pengunjung tanpa login</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="is_public" value="1" class="sr-only peer" {{ $lecturer->is_public ? 'checked' : '' }}>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-del"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button type="submit" class="bg-del text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-del-light transition-colors">
+                            Simpan Perubahan
+                        </button>
+                        <a href="{{ route('dosen.index') }}" class="px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+                            Batal
+                        </a>
+                    </div>
+                </form>
             </div>
+        </div>
 
-            <!-- Nama -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Lengkap</label>
-                <input type="text" name="name" value="{{ old('name', auth()->user()->name) }}"
-                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
-            </div>
-
-            <!-- Email -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {{-- ── Kolom Kanan: Transfer Jabatan Dekan (hanya Dekan) ── --}}
+        @if(auth()->user()->isDekan())
+        <div class="xl:col-span-1">
+            <div class="bg-white rounded-2xl border border-red-100 p-5 sticky top-6">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
                     </div>
-                    <input type="email" name="email" value="{{ old('email', auth()->user()->email) }}"
-                        class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del"
-                        placeholder="email@example.com">
-                </div>
-                <p class="text-xs text-gray-400 mt-1">Email ini akan ditampilkan di profil publik Anda</p>
-                @error('email')
-                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- NIDN -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">NIDN</label>
-                <input type="text" name="nidn" value="{{ old('nidn', $lecturer->nidn) }}"
-                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del"
-                    placeholder="10 digit NIDN">
-            </div>
-
-            <!-- Jabatan Fungsional -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                    Jabatan Fungsional
-                    <span class="text-xs text-gray-400 font-normal ml-1">(Sesuai SK Dikti)</span>
-                </label>
-                <select name="jabatan_fungsional"
-                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del bg-white">
-                    <option value="">— Pilih Jabatan Fungsional —</option>
-                    @foreach(App\Models\Lecturer::jabatanFungsionalOptions() as $jf)
-                        <option value="{{ $jf }}" {{ old('jabatan_fungsional', $lecturer->jabatan_fungsional) === $jf ? 'selected' : '' }}>
-                            {{ $jf }}
-                        </option>
-                    @endforeach
-                </select>
-                <p class="text-xs text-gray-400 mt-1">Berdasarkan Permendikbud No. 92 Tahun 2014</p>
-            </div>
-
-            <!-- Kepakaran -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">Kepakaran / Bidang Keahlian</label>
-                <textarea name="expertise" rows="3"
-                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del resize-none"
-                    placeholder="Contoh: Rekayasa Perangkat Lunak, Machine Learning, Web Development">{{ old('expertise', $lecturer->expertise) }}</textarea>
-            </div>
-
-            <!-- Visibilitas Profil -->
-            <div class="bg-gray-50 rounded-xl p-4">
-                <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-800">Profil Publik</p>
-                        <p class="text-xs text-gray-500 mt-0.5">Aktifkan agar profil terlihat oleh pengunjung tanpa login</p>
+                        <h3 class="text-sm font-semibold text-gray-800">Alihkan Jabatan Dekan</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">
+                            Setelah dikonfirmasi, Anda otomatis turun menjadi Dosen dan sesi Anda akan berakhir.
+                        </p>
                     </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="is_public" value="1" class="sr-only peer" {{ $lecturer->is_public ? 'checked' : '' }}>
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-del"></div>
-                    </label>
                 </div>
-            </div>
 
-            <div class="flex gap-3 pt-2">
-                <button type="submit" class="bg-del text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-del-light transition-colors">
-                    Simpan Perubahan
-                </button>
-                <a href="{{ route('dosen.index') }}" class="px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
-                    Batal
-                </a>
+                @if($errors->has('transfer_to_lecturer_id'))
+                    <div class="mb-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+                        {{ $errors->first('transfer_to_lecturer_id') }}
+                    </div>
+                @endif
+
+                <form action="{{ route('dosen.transfer-dekan') }}" method="POST"
+                      onsubmit="return confirm('Yakin ingin mengalihkan jabatan Dekan? Sesi Anda akan berakhir setelah ini.')">
+                    @csrf
+                    <label class="block text-xs font-medium text-gray-700 mb-1.5">
+                        Pilih Penerima Jabatan <span class="text-red-500">*</span>
+                    </label>
+                    <select name="transfer_to_lecturer_id" required
+                        class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white mb-3">
+                        <option value="">— Pilih dosen aktif —</option>
+                        @foreach($allLecturers as $lec)
+                            <option value="{{ $lec->id }}">
+                                {{ $lec->user->name }}
+                                ({{ $lec->studyProgram->name ?? '-' }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <button type="submit"
+                        class="w-full px-4 py-2.5 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600 transition-colors">
+                        Alihkan Jabatan
+                    </button>
+                </form>
             </div>
-        </form>
+        </div>
+        @endif
+
     </div>
 </div>
-
-@if(auth()->user()->isDekan())
-{{-- ═══════════════════════════════════════════
-     TRANSFER JABATAN DEKAN — hanya muncul untuk Dekan
-═══════════════════════════════════════════ --}}
-<div class="mt-6 bg-white rounded-2xl border border-red-100 p-6">
-    <div class="flex items-start gap-3 mb-5">
-        <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-            </svg>
-        </div>
-        <div>
-            <h3 class="text-sm font-semibold text-gray-800">Alihkan Jabatan Dekan</h3>
-            <p class="text-xs text-gray-500 mt-0.5">
-                Pilih dosen penerima jabatan Dekan. Setelah dikonfirmasi, Anda otomatis turun menjadi Dosen
-                dan sesi Anda akan berakhir.
-            </p>
-        </div>
-    </div>
-
-    @if($errors->has('transfer_to_lecturer_id'))
-        <div class="mb-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
-            {{ $errors->first('transfer_to_lecturer_id') }}
-        </div>
-    @endif
-
-    <form action="{{ route('dosen.transfer-dekan') }}" method="POST"
-          onsubmit="return confirm('Yakin ingin mengalihkan jabatan Dekan? Sesi Anda akan berakhir setelah ini.')">
-        @csrf
-        <div class="flex gap-3 items-end">
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                    Pilih Penerima Jabatan <span class="text-red-500">*</span>
-                </label>
-                <select name="transfer_to_lecturer_id" required
-                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white">
-                    <option value="">— Pilih dosen aktif —</option>
-                    @foreach($allLecturers as $lec)
-                        <option value="{{ $lec->id }}">
-                            {{ $lec->user->name }}
-                            ({{ $lec->studyProgram->name ?? '-' }} · {{ ucfirst($lec->user->role) }})
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <button type="submit"
-                class="px-5 py-2.5 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600 transition-colors whitespace-nowrap">
-                Alihkan Jabatan
-            </button>
-        </div>
-    </form>
-</div>
-@endif
-
 @endsection

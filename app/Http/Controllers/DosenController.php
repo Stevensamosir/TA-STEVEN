@@ -56,7 +56,9 @@ class DosenController extends Controller
             ];
         };
 
+        $chartYears10 = range($currentYear - 9, $currentYear);
         $chartData5   = $buildChart($chartYears5);
+        $chartData10  = $buildChart($chartYears10);
         $chartDataAll = $buildChart($chartYearsAll);
         $chartData    = $chartData5; // tetap disediakan untuk kompatibilitas
 
@@ -75,7 +77,7 @@ class DosenController extends Controller
             ->take(5)
             ->values();
 
-        return view('dosen.index', compact('lecturer', 'stats', 'chartData', 'chartData5', 'chartDataAll', 'recentActivities'));
+        return view('dosen.index', compact('lecturer', 'stats', 'chartData', 'chartData5', 'chartData10', 'chartDataAll', 'recentActivities'));
     }
 
     // ─── PROFIL ──────────────────────────────────────────────
@@ -286,7 +288,7 @@ class DosenController extends Controller
             'year'          => 'required|integer|min:1970|max:'.date('Y'),
             'visibility'    => 'required|in:public,private',
         ]);
-        $this->getLecturer()->publications()->create($request->only(['title','publisher','publisher_url','year','visibility']));
+        $this->getLecturer()->publications()->create($request->only(['title','publisher','publisher_url','year','visibility','authors']));
         return back()->with('success', 'Data publikasi ditambahkan.');
     }
 
@@ -300,7 +302,7 @@ class DosenController extends Controller
             'visibility'    => 'required|in:public,private',
         ]);
         Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['title','publisher','publisher_url','year','visibility']));
+            ->update($request->only(['title','publisher','publisher_url','year','visibility','authors']));
         return back()->with('success', 'Data publikasi diperbarui.');
     }
 

@@ -15,6 +15,13 @@ class DoiController extends Controller
     {
         $doi = trim($request->input('doi', ''));
 
+        // Jika diakses langsung dari browser (bukan AJAX/JSON request),
+        // redirect ke halaman publikasi dengan pesan error yang ramah.
+        if (!$request->wantsJson() && !$request->ajax()) {
+            return redirect()->route('dosen.publikasi')
+                ->with('error', 'Gunakan fitur Cari DOI di halaman Publikasi.');
+        }
+
         if (empty($doi)) {
             return response()->json(['error' => 'DOI tidak boleh kosong.'], 422);
         }
@@ -105,7 +112,7 @@ class DoiController extends Controller
      * Bersihkan input DOI:
      * - https://doi.org/10.xxxx/xxx → 10.xxxx/xxx
      * - doi:10.xxxx/xxx             → 10.xxxx/xxx
-     * - 10.xxxx/xxx                 → 10.xxxx/xxx (tidak diubah)
+     * - 10.xxxx/xxx                 → 10.xxxx/xxx 
      */
     private function cleanDoi(string $doi): string
     {

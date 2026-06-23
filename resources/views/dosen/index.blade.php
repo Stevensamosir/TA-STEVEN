@@ -79,24 +79,42 @@
                     <p class="text-xs text-gray-400 mt-0.5" id="dashChartRangeLabel">5 tahun terakhir</p>
                 </div>
                 <div class="flex items-center gap-3 flex-wrap">
-                    <!-- Legend -->
-                    <div class="flex gap-3">
-                        @foreach([['bg-indigo-500','Penelitian'],['bg-emerald-500','Pengabdian'],['bg-violet-500','Publikasi']] as [$c,$l])
-                        <span class="flex items-center gap-1.5 text-xs text-gray-500">
-                            <span class="w-2.5 h-2.5 rounded-sm {{ $c }}"></span>{{ $l }}
-                        </span>
+                    <!-- Legend (klikable — klik untuk sembunyikan/tampilkan data) -->
+                    <div class="flex gap-1" id="dash-legend">
+                        @foreach([[0,'bg-indigo-500','Penelitian'],[1,'bg-emerald-500','Pengabdian'],[2,'bg-violet-500','Publikasi']] as [$idx,$bg,$lbl])
+                        <button type="button" onclick="toggleDashDataset({{ $idx }})" id="dash-legend-{{ $idx }}"
+                                class="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 cursor-pointer select-none px-2 py-1 rounded hover:bg-gray-100 transition-all">
+                            <span class="w-2.5 h-2.5 rounded-sm {{ $bg }} flex-shrink-0" id="dash-legend-dot-{{ $idx }}"></span>
+                            {{ $lbl }}
+                        </button>
                         @endforeach
                     </div>
                     <!-- Toggle rentang waktu -->
-                    <div class="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5 text-xs">
-                        <button type="button" onclick="setDashChartRange('5')" id="dash-btn-range-5"
-                                class="dash-range-btn px-2.5 py-1 rounded-md transition-all font-medium bg-white text-del shadow-sm">
-                            5 Tahun
-                        </button>
-                        <button type="button" onclick="setDashChartRange('all')" id="dash-btn-range-all"
-                                class="dash-range-btn px-2.5 py-1 rounded-md transition-all font-medium text-gray-400">
-                            Semua Tahun
-                        </button>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <div class="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5 text-xs">
+                            <button type="button" onclick="setDashChartRange('5')" id="dash-btn-range-5"
+                                    class="dash-range-btn px-2.5 py-1 rounded-md transition-all font-medium bg-white text-del shadow-sm">
+                                5 Tahun
+                            </button>
+                            <button type="button" onclick="setDashChartRange('10')" id="dash-btn-range-10"
+                                    class="dash-range-btn px-2.5 py-1 rounded-md transition-all font-medium text-gray-400">
+                                10 Tahun
+                            </button>
+                            <button type="button" onclick="setDashChartRange('all')" id="dash-btn-range-all"
+                                    class="dash-range-btn px-2.5 py-1 rounded-md transition-all font-medium text-gray-400">
+                                Semua
+                            </button>
+                        </div>
+                        <div class="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5">
+                            <button type="button" onclick="setDashChartType('bar')" id="dash-type-btn-bar"
+                                    title="Grafik Batang" class="dash-type-btn p-1.5 rounded-md transition-all text-gray-400">
+                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="4" width="4" height="17" rx="1"/></svg>
+                            </button>
+                            <button type="button" onclick="setDashChartType('line')" id="dash-type-btn-line"
+                                    title="Grafik Garis" class="dash-type-btn p-1.5 rounded-md transition-all bg-white text-del shadow-sm">
+                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 8 11 13 14 19 6"/><circle cx="3" cy="17" r="1.5" fill="currentColor" stroke="none"/><circle cx="8" cy="11" r="1.5" fill="currentColor" stroke="none"/><circle cx="13" cy="14" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="6" r="1.5" fill="currentColor" stroke="none"/></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -199,6 +217,12 @@ const DASH_RANGE_DATA = {
         pengabdian: {!! json_encode($chartData5['pengabdian']) !!},
         publikasi:  {!! json_encode($chartData5['publikasi']) !!},
     },
+    '10': {
+        labels: {!! json_encode($chartData10['years']) !!},
+        penelitian: {!! json_encode($chartData10['penelitian']) !!},
+        pengabdian: {!! json_encode($chartData10['pengabdian']) !!},
+        publikasi:  {!! json_encode($chartData10['publikasi']) !!},
+    },
     'all': {
         labels: {!! json_encode($chartDataAll['years']) !!},
         penelitian: {!! json_encode($chartDataAll['penelitian']) !!},
@@ -206,22 +230,24 @@ const DASH_RANGE_DATA = {
         publikasi:  {!! json_encode($chartDataAll['publikasi']) !!},
     },
 };
-const DASH_RANGE_LABEL = { '5': '5 tahun terakhir', 'all': 'Seluruh tahun aktivitas tercatat' };
+const DASH_RANGE_LABEL = { '5': '5 tahun terakhir', '10': '10 tahun terakhir', 'all': 'Semua tahun' };
+let dashChartType = 'line';
 
-function buildDashDatasets(data) {
+function buildDashDatasets(data, isBar) {
     return [
-        { label: 'Penelitian', data: data.penelitian, borderColor: 'rgb(99,102,241)', backgroundColor: 'rgba(99,102,241,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.4, fill: true },
-        { label: 'Pengabdian', data: data.pengabdian, borderColor: 'rgb(16,185,129)', backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.4, fill: true },
-        { label: 'Publikasi',  data: data.publikasi,  borderColor: 'rgb(139,92,246)', backgroundColor: 'rgba(139,92,246,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.4, fill: true },
+        { label:'Penelitian', data:data.penelitian, borderColor:'rgb(99,102,241)', backgroundColor: isBar?'rgba(99,102,241,0.75)':'rgba(99,102,241,0.08)', borderWidth: isBar?0:2.5, borderRadius: isBar?4:0, pointRadius: isBar?0:4, pointHoverRadius:6, tension:0.4, fill:!isBar },
+        { label:'Pengabdian', data:data.pengabdian, borderColor:'rgb(16,185,129)',  backgroundColor: isBar?'rgba(16,185,129,0.75)':'rgba(16,185,129,0.08)',  borderWidth: isBar?0:2.5, borderRadius: isBar?4:0, pointRadius: isBar?0:4, pointHoverRadius:6, tension:0.4, fill:!isBar },
+        { label:'Publikasi',  data:data.publikasi,  borderColor:'rgb(139,92,246)',  backgroundColor: isBar?'rgba(139,92,246,0.75)':'rgba(139,92,246,0.08)',  borderWidth: isBar?0:2.5, borderRadius: isBar?4:0, pointRadius: isBar?0:4, pointHoverRadius:6, tension:0.4, fill:!isBar },
     ];
 }
 
 function rebuildDashChart() {
     const data = DASH_RANGE_DATA[dashCurrentRange];
+    const isBar = dashChartType === 'bar';
     if (dashboardChart) dashboardChart.destroy();
     dashboardChart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: data.labels, datasets: buildDashDatasets(data) },
+        type: dashChartType,
+        data: { labels: data.labels, datasets: buildDashDatasets(data, isBar) },
         options: {
             responsive: true,
             plugins: {
@@ -229,12 +255,19 @@ function rebuildDashChart() {
                 tooltip: { backgroundColor: '#1e293b', padding: 10, cornerRadius: 8, mode: 'index', intersect: false }
             },
             scales: {
-                x: { grid: { display: false }, border: { display: false } },
-                y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: '#f1f5f9' }, border: { display: false } }
+                x: { grid: { display: true, color:'#e5e7eb', lineWidth:0.8 }, border: { display: false } },
+                y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: '#e5e7eb', lineWidth: 0.8 }, border: { display: false } }
             },
             interaction: { mode: 'index', intersect: false },
         }
     });
+}
+function setDashChartType(type) {
+    dashChartType = type;
+    document.querySelectorAll('.dash-type-btn').forEach(b => { b.classList.remove('bg-white','text-del','shadow-sm'); b.classList.add('text-gray-400'); });
+    const btn = document.getElementById('dash-type-btn-' + type);
+    if(btn){ btn.classList.remove('text-gray-400'); btn.classList.add('bg-white','text-del','shadow-sm'); }
+    rebuildDashChart();
 }
 
 function setDashChartRange(range) {
@@ -248,6 +281,25 @@ function setDashChartRange(range) {
     activeBtn.classList.add('bg-white', 'text-del', 'shadow-sm');
     document.getElementById('dashChartRangeLabel').textContent = DASH_RANGE_LABEL[range];
     rebuildDashChart();
+}
+
+// Toggle dataset saat legend diklik (saran Bu Ana)
+const _dashHidden = [false, false, false];
+function toggleDashDataset(index) {
+    _dashHidden[index] = !_dashHidden[index];
+    const btn = document.getElementById('dash-legend-' + index);
+    const dot = document.getElementById('dash-legend-dot-' + index);
+    if (_dashHidden[index]) {
+        btn.classList.add('opacity-40');
+        dot.classList.add('opacity-30');
+    } else {
+        btn.classList.remove('opacity-40');
+        dot.classList.remove('opacity-30');
+    }
+    if (dashboardChart) {
+        dashboardChart.setDatasetVisibility(index, !_dashHidden[index]);
+        dashboardChart.update();
+    }
 }
 
 if (ctx) {

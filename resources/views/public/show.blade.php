@@ -30,14 +30,23 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <!-- Breadcrumb -->
-    <nav class="flex items-center gap-2 text-xs text-gray-400 mb-6">
-        <a href="{{ route('home') }}" class="hover:text-del transition-colors">Beranda</a>
-        <span>/</span>
-        <a href="{{ route('public.dosen') }}" class="hover:text-del transition-colors">Dosen</a>
-        <span>/</span>
-        <span class="text-gray-600 font-medium">{{ $lecturer->user->name }}</span>
-    </nav>
+    <!-- Breadcrumb + Back Button -->
+    <div class="flex items-center gap-3 mb-6">
+        <button onclick="history.back()"
+            class="flex items-center gap-1.5 text-xs text-gray-500 hover:text-del bg-white border border-gray-200 hover:border-del rounded-lg px-3 py-1.5 transition-colors flex-shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Kembali
+        </button>
+        <nav class="flex items-center gap-2 text-xs text-gray-400 overflow-hidden">
+            <a href="{{ route('home') }}" class="hover:text-del transition-colors whitespace-nowrap">Beranda</a>
+            <span>/</span>
+            <a href="{{ route('public.dosen') }}" class="hover:text-del transition-colors whitespace-nowrap">Dosen</a>
+            <span>/</span>
+            <span class="text-gray-600 font-medium truncate">{{ $lecturer->user->name }}</span>
+        </nav>
+    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -123,8 +132,8 @@
                     @foreach([
                         ['Pendidikan',  $lecturer->educations->count(),        'bg-blue-600',   '📚'],
                         ['Penelitian',  $lecturer->researches->count(),         'bg-indigo-600', '🔬'],
-                        ['Pengabdian',  $lecturer->communityServices->count(),  'bg-emerald-600','🌱'],
-                        ['Publikasi',   $lecturer->publications->count(),        'bg-violet-600', '📄'],
+                        ['Pengabdian',  $lecturer->communityServices->count(),  'bg-emerald-600','🤝'],
+                        ['Publikasi',   $lecturer->publications->count(),        'bg-violet-600', '📖'],
                     ] as [$label, $count, $color, $icon])
                     <div class="rounded-xl bg-gray-50 p-3 text-center hover:shadow-sm transition-all">
                         <div class="text-xl mb-0.5">{{ $icon }}</div>
@@ -135,28 +144,7 @@
                 </div>
             </div>
 
-            <!-- Contact / Share -->
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 fade-up fade-up-d2">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Bagikan Profil</p>
-                @if($lecturer->user->email)
-                <a href="mailto:{{ $lecturer->user->email }}"
-                   class="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-del hover:text-white text-del text-sm font-medium rounded-xl px-4 py-2.5 transition-all border border-blue-100 hover:border-del mb-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                    Kirim Email
-                </a>
-                @endif
-                <button onclick="navigator.clipboard.writeText(window.location.href).then(()=>alert('URL disalin!'))"
-                        class="w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-del hover:text-white text-gray-600 text-sm font-medium rounded-xl px-4 py-2.5 transition-all border border-gray-200 hover:border-del">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
-                    </svg>
-                    Salin Tautan
-                </button>
-            </div>
+
         </div>
 
         <!-- ════════════════ MAIN CONTENT ════════════════ -->
@@ -170,12 +158,14 @@
                         <p class="text-xs text-gray-400 mt-0.5" id="chartRangeLabel">5 tahun terakhir</p>
                     </div>
                     <div class="flex items-center gap-4 flex-wrap justify-end">
-                        {{-- Legend --}}
-                        <div class="flex gap-3 text-xs text-gray-500 select-none">
-                            @foreach([['bg-blue-500','Penelitian'],['bg-emerald-500','Pengabdian'],['bg-violet-500','Publikasi']] as [$c,$l])
-                            <span class="flex items-center gap-1.5">
-                                <span class="w-2.5 h-2.5 rounded-sm {{ $c }}"></span>{{ $l }}
-                            </span>
+                        {{-- Legend (klikable — klik untuk sembunyikan/tampilkan) --}}
+                        <div class="flex gap-1 text-xs text-gray-500 select-none" id="pub-legend">
+                            @foreach([[0,'bg-blue-500','Penelitian'],[1,'bg-emerald-500','Pengabdian'],[2,'bg-violet-500','Publikasi']] as [$idx,$bg,$lbl])
+                            <button type="button" onclick="togglePubDataset({{ $idx }})" id="pub-legend-{{ $idx }}"
+                                    class="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-gray-100 transition-all cursor-pointer">
+                                <span class="w-2.5 h-2.5 rounded-sm {{ $bg }} flex-shrink-0" id="pub-legend-dot-{{ $idx }}"></span>
+                                {{ $lbl }}
+                            </button>
                             @endforeach
                         </div>
                         {{-- Toggle rentang waktu: 5 Tahun Terakhir / Semua Tahun (pola sama dengan
@@ -186,9 +176,13 @@
                                     class="chart-toggle-btn active px-2.5 py-1 rounded-md transition-all font-medium">
                                 5 Tahun
                             </button>
+                            <button type="button" onclick="setChartRange('10')" id="btn-range-10"
+                                    class="chart-toggle-btn px-2.5 py-1 rounded-md transition-all font-medium">
+                                10 Tahun
+                            </button>
                             <button type="button" onclick="setChartRange('all')" id="btn-range-all"
                                     class="chart-toggle-btn px-2.5 py-1 rounded-md transition-all font-medium">
-                                Semua Tahun
+                                Semua
                             </button>
                         </div>
                         {{-- Toggle Bar / Line --}}
@@ -253,7 +247,7 @@
                     <!-- TAB: PENDIDIKAN -->
                     <div id="tab-pendidikan" class="tab-panel">
                         @if($lecturer->educations->isEmpty())
-                            <p class="text-sm text-gray-400 text-center py-8">Belum ada data pendidikan.</p>
+                            <p class="text-sm text-gray-500 text-center py-8">Belum ada data pendidikan.</p>
                         @else
                         <div class="relative pl-6 border-l-2 border-gray-100 space-y-5">
                             @foreach($lecturer->educations as $edu)
@@ -277,7 +271,7 @@
                     <!-- TAB: PENELITIAN -->
                     <div id="tab-penelitian" class="tab-panel">
                         @if($lecturer->researches->isEmpty())
-                            <p class="text-sm text-gray-400 text-center py-8">Belum ada data penelitian.</p>
+                            <p class="text-sm text-gray-500 text-center py-8">Belum ada data penelitian.</p>
                         @else
                         <div class="space-y-3">
                             @foreach($lecturer->researches as $item)
@@ -305,14 +299,14 @@
                     <!-- TAB: PENGABDIAN -->
                     <div id="tab-pengabdian" class="tab-panel">
                         @if($lecturer->communityServices->isEmpty())
-                            <p class="text-sm text-gray-400 text-center py-8">Belum ada data pengabdian.</p>
+                            <p class="text-sm text-gray-500 text-center py-8">Belum ada data pengabdian.</p>
                         @else
                         <div class="space-y-3">
                             @foreach($lecturer->communityServices as $item)
                             <div class="flex items-start gap-3 p-3 rounded-xl hover:bg-emerald-50/50 transition-colors border border-transparent hover:border-emerald-100">
                                 <div class="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
                                     <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/>
                                     </svg>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -334,37 +328,32 @@
                     <div id="tab-publikasi" class="tab-panel">
                         <!-- Filter Year -->
                         <div class="flex items-center gap-2 mb-4">
-                            <form action="{{ route('public.dosen.show', $lecturer->id) }}" method="GET" class="flex items-center gap-2">
-                                <select name="year" onchange="this.form.submit()"
-                                        class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-del bg-white">
-                                    <option value="">Semua Tahun</option>
-                                    @foreach($pubYears as $y)
-                                        <option value="{{ $y }}" {{ $filterYear == $y ? 'selected' : '' }}>{{ $y }}</option>
-                                    @endforeach
-                                </select>
-                                @if($filterYear)
-                                    <a href="{{ route('public.dosen.show', $lecturer->id) }}"
-                                       class="text-xs text-red-400 hover:underline flex items-center gap-1">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>Reset
-                                    </a>
-                                @endif
-                            </form>
-                            @if($filterYear)
-                                <span class="text-xs text-gray-400">— {{ $publications->count() }} hasil tahun {{ $filterYear }}</span>
-                            @endif
+    <div class="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5 text-xs" id="pubYearToggle">
+                                <button type="button" onclick="filterPubYear('all')" id="pub-yr-all"
+                                        class="pub-yr-btn px-2.5 py-1 rounded-md font-medium transition-all bg-white text-del shadow-sm">
+                                    Semua
+                                </button>
+                                <button type="button" onclick="filterPubYear('5')" id="pub-yr-5"
+                                        class="pub-yr-btn px-2.5 py-1 rounded-md font-medium transition-all text-gray-400">
+                                    5 Tahun
+                                </button>
+                                <button type="button" onclick="filterPubYear('10')" id="pub-yr-10"
+                                        class="pub-yr-btn px-2.5 py-1 rounded-md font-medium transition-all text-gray-400">
+                                    10 Tahun
+                                </button>
+                            </div>
+
                         </div>
 
                         @if($publications->isEmpty())
-                            <p class="text-sm text-gray-400 text-center py-8">Belum ada publikasi.</p>
+                            <p class="text-sm text-gray-500 text-center py-8">Belum ada publikasi.</p>
                         @else
                         <div class="space-y-3">
                             @foreach($publications as $pub)
-                            <div class="flex items-start gap-3 p-3 rounded-xl hover:bg-violet-50/50 transition-colors border border-transparent hover:border-violet-100">
+                            <div class="flex items-start gap-3 p-3 rounded-xl hover:bg-violet-50/50 transition-colors border border-transparent hover:border-violet-100" data-pub-year="{{ $pub->year }}">
                                 <div class="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                                     <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 12h6m4 0h.01"/>
                                     </svg>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -380,6 +369,16 @@
                                         <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ $pub->year }}</span>
                                         @if($pub->publisher)
                                             <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ $pub->publisher }}</span>
+                                        @endif
+                                        @if($pub->authors)
+                                            @php
+                                                $authorList = collect(explode(',', $pub->authors))->map(fn($a) => trim($a))->filter();
+                                                $displayAuthors = $authorList->take(3)->join(', ');
+                                                $moreCount = max(0, $authorList->count() - 3);
+                                            @endphp
+                                            <span class="text-xs text-gray-400 italic">
+                                                {{ $displayAuthors }}{{ $moreCount > 0 ? ', +' . $moreCount . ' lainnya' : '' }}
+                                            </span>
                                         @endif
                                         @if($pub->publisher_url)
                                             <a href="{{ $pub->publisher_url }}" target="_blank"
@@ -446,7 +445,7 @@ const RANGE_DATA = {
         pub:      {!! json_encode($chartAll['pub']) !!},
     },
 };
-const RANGE_LABEL_TEXT = { '5': '5 tahun terakhir', 'all': 'Seluruh tahun aktivitas tercatat' };
+const RANGE_LABEL_TEXT = { '5': '5 tahun terakhir', '10': '10 tahun terakhir', 'all': 'Semua tahun' };
 
 let currentType  = 'bar';
 let currentRange = '5';
@@ -464,8 +463,8 @@ const commonOptions = {
         tooltip: { backgroundColor: '#1e293b', padding: 10, cornerRadius: 8 }
     },
     scales: {
-        x: { grid: { display: false }, border: { display: false } },
-        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: '#f1f5f9' }, border: { display: false } }
+        x: { grid: { display: true, color:'#f3f4f6', lineWidth:0.5 }, border: { display: false } },
+        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: '#e5e7eb', lineWidth: 0.5 }, border: { display: false } }
     }
 };
 
@@ -506,16 +505,64 @@ function setChartType(type) {
 
 function setChartRange(range) {
     currentRange = range;
+    // Generate 10yr slice dinamis dari all-data saat pertama dipilih
+    if (range === '10' && !RANGE_DATA['10']) {
+        const all = RANGE_DATA['all'];
+        const n = all.labels.length;
+        const s = Math.max(0, n - 10);
+        RANGE_DATA['10'] = {
+            labels:   all.labels.slice(s),
+            research: all.research.slice(s),
+            service:  all.service.slice(s),
+            pub:      all.pub.slice(s),
+        };
+    }
     document.querySelectorAll('#rangeToggle .chart-toggle-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-range-' + range).classList.add('active');
     document.getElementById('chartRangeLabel').textContent = RANGE_LABEL_TEXT[range];
     rebuildChart();
 }
 
+// Toggle dataset saat legend diklik (saran Bu Ana)
+const _pubHidden = [false, false, false];
+function togglePubDataset(index) {
+    _pubHidden[index] = !_pubHidden[index];
+    const btn = document.getElementById('pub-legend-' + index);
+    const dot = document.getElementById('pub-legend-dot-' + index);
+    if (_pubHidden[index]) {
+        btn.classList.add('opacity-40');
+        dot.classList.add('opacity-30');
+    } else {
+        btn.classList.remove('opacity-40');
+        dot.classList.remove('opacity-30');
+    }
+    if (performaChart) {
+        performaChart.setDatasetVisibility(index, !_pubHidden[index]);
+        performaChart.update();
+    }
+}
+
 if (ctx) {
     rebuildChart();
 }
 @endif
+
+function filterPubYear(range) {
+    const now = new Date().getFullYear();
+    document.querySelectorAll('.pub-yr-btn').forEach(b => {
+        b.classList.remove('bg-white','text-del','shadow-sm');
+        b.classList.add('text-gray-400');
+    });
+    const activeBtn = document.getElementById('pub-yr-' + range);
+    if(activeBtn){ activeBtn.classList.remove('text-gray-400'); activeBtn.classList.add('bg-white','text-del','shadow-sm'); }
+    document.querySelectorAll('[data-pub-year]').forEach(el => {
+        const yr = parseInt(el.dataset.pubYear);
+        let show = true;
+        if(range === '5') show = yr >= now - 4;
+        else if(range === '10') show = yr >= now - 9;
+        el.style.display = show ? '' : 'none';
+    });
+}
 
 // Style tombol toggle aktif
 const toggleStyle = document.createElement('style');

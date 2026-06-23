@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Publication extends Model
 {
-    protected $fillable = ['lecturer_id','title','year','publisher','publisher_url','visibility'];
+    protected $fillable = ['lecturer_id','title','year','publisher','publisher_url','visibility','authors'];
     
     protected $table = 'publications';
 

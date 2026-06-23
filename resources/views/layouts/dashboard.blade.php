@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') — Sistem Profil Dosen Vokasi</title>
+    <title>@yield('title', 'Dashboard') | Sistem Profil Dosen Vokasi</title>
 
     {{-- ✅ FAVICON: Pakai logo asli IT Del --}}
     <link rel="icon" type="image/png" href="/images/logo-del.png">
@@ -103,15 +103,11 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
                 Kelola Dosen
             </a>
-            <a href="{{ route('admin.prodi') }}" class="sidebar-link {{ request()->routeIs('admin.prodi*') ? 'active' : '' }}">
+            <a href="{{ route('admin.prodi') }}" class="sidebar-link {{ request()->routeIs('admin.prodi*', 'admin.hierarki*') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/>
                 </svg>
                 Kelola Prodi
-            </a>
-            <a href="{{ route('admin.hierarki') }}" class="sidebar-link {{ request()->routeIs('admin.hierarki*') ? 'active' : '' }}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
-                Hierarki Kaprodi
             </a>
             <a href="{{ route('admin.internal') }}" class="sidebar-link {{ request()->routeIs('admin.internal') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -192,10 +188,16 @@
 
         <div class="px-6 pt-4">
             @if(session('success'))
-                <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm mb-4 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    {{ session('success') }}
+                <div id="toast-success" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm mb-4 flex items-center justify-between gap-2 transition-opacity duration-500">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        {{ session('success') }}
+                    </div>
+                    <button onclick="document.getElementById('toast-success').remove()" class="text-green-500 hover:text-green-700 flex-shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
+                <script>setTimeout(()=>{const t=document.getElementById('toast-success');if(t){t.style.opacity='0';setTimeout(()=>t.remove(),500);}},4000);</script>
             @endif
             @if($errors->any())
                 <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm mb-4">

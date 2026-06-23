@@ -19,18 +19,19 @@
             <label class="block text-sm font-semibold text-del mb-2">
                 🔍 Auto-fill via DOI (Crossref)
             </label>
-            <div class="flex gap-2">
+            {{-- form terpisah agar keyboard mobile tidak trigger form publikasi utama --}}
+            <form onsubmit="fetchDoi(); return false;" autocomplete="off" class="flex flex-col sm:flex-row gap-2">
                 <input type="text" id="doi-input"
                     class="flex-1 px-3 py-2.5 border border-blue-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 bg-white"
-                    placeholder="Contoh: 10.1145/3644815.3644951 atau https://doi.org/10.xxxx/...">
-                <button type="button" onclick="fetchDoi()"
+                    placeholder="Contoh: 10.1145/3644815.3">
+                <button type="submit"
                     id="doi-btn"
-                    class="bg-del text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-del-light transition-colors whitespace-nowrap flex items-center gap-2">
-                    <svg id="doi-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
-                    <svg id="doi-spinner" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                    class="w-full sm:w-auto bg-del text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-del-light transition-colors whitespace-nowrap flex items-center justify-center gap-2">
+                    <svg id="doi-icon" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+                    <svg id="doi-spinner" class="w-4 h-4 flex-shrink-0 animate-spin hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
                     Cari
                 </button>
-            </div>
+            </form>
             <!-- Status pesan -->
             <div id="doi-status" class="mt-2 text-xs hidden"></div>
             <!-- Preview hasil DOI -->
@@ -56,8 +57,8 @@
         <!-- Form Manual -->
         <form action="{{ route('dosen.publikasi.store') }}" method="POST" id="pub-form">
             @csrf
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div class="md:col-span-2">
+            <div class="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-3">
+                <div class="sm:col-span-2">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Judul Publikasi *</label>
                     <input type="text" name="title" id="field-title" required
                         class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30"
@@ -70,7 +71,7 @@
                         class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2">
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Penerbit / Jurnal</label>
                     <input type="text" name="publisher" id="field-publisher"
@@ -86,16 +87,16 @@
                         placeholder="https://doi.org/..."
                         class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
                 </div>
-            </div>
-            <div class="flex gap-3 items-center">
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Visibilitas</label>
-                    <select name="visibility" class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none">
-                        <option value="public">Publik</option>
-                        <option value="private">Internal</option>
-                    </select>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Penulis <span class="text-gray-400 font-normal">— otomatis dari DOI</span></label>
+                    <input type="text" name="authors" id="field-authors"
+                        placeholder="Nama Penulis 1, Nama Penulis 2, ..."
+                        class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
                 </div>
-                <button type="submit" class="mt-5 bg-del text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-del-light transition-colors">
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 sm:items-end">
+                
+                <button type="submit" class="w-full sm:w-auto mt-0 sm:mt-5 bg-del text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-del-light transition-colors">
                     + Simpan Publikasi
                 </button>
             </div>
@@ -111,26 +112,38 @@
             <div class="text-center py-12 text-gray-400 text-sm">Belum ada data publikasi. Tambahkan via DOI atau manual.</div>
         @else
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm min-w-[580px]">
                 <thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
                     <tr>
+                        <th class="px-4 py-3 text-center w-10">No.</th>
                         <th class="px-5 py-3 text-left">Judul</th>
                         <th class="px-5 py-3 text-left">Tahun</th>
                         <th class="px-5 py-3 text-left">Penerbit</th>
+                        <th class="px-5 py-3 text-left">Penulis</th>
                         <th class="px-5 py-3 text-left">Link</th>
-                        <th class="px-5 py-3 text-left">Visibilitas</th>
                         <th class="px-5 py-3 text-left">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
                     @foreach($publikasis as $item)
                     <tr class="hover:bg-gray-50/50">
+                        <td class="px-4 py-3 text-center text-xs text-gray-400 font-medium">{{ $loop->iteration }}</td>
                         <td class="px-5 py-3 font-medium text-gray-800 max-w-xs">
                             <p class="line-clamp-2">{{ $item->title }}</p>
                         </td>
                         <td class="px-5 py-3 text-gray-600">{{ $item->year }}</td>
                         <td class="px-5 py-3 text-gray-500 text-xs max-w-[140px]">
                             <p class="line-clamp-2">{{ $item->publisher ?? '-' }}</p>
+                        </td>
+                        <td class="px-5 py-3 text-gray-500 text-xs max-w-[160px]">
+                            @php
+                                $authors = $item->authors ? collect(explode(',', $item->authors))->take(3)->map(fn($a)=>trim($a))->filter() : collect();
+                            @endphp
+                            @if($authors->isNotEmpty())
+                                <p class="line-clamp-2">{{ $authors->join(', ') }}{{ str_contains($item->authors ?? '', ',') && count(explode(',', $item->authors)) > 3 ? ', ...' : '' }}</p>
+                            @else
+                                <span class="text-gray-300">—</span>
+                            @endif
                         </td>
                         <td class="px-5 py-3">
                             @if($item->publisher_url)
@@ -143,32 +156,22 @@
                                 <span class="text-xs text-gray-300">-</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3">
-                            <form action="{{ route('dosen.publikasi.visibility', $item->id) }}" method="POST">
-                                @csrf @method('PATCH')
-                                <button type="submit"
-                                    class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full transition-colors
-                                           {{ $item->visibility === 'public' ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
-                                    <span class="w-1.5 h-1.5 rounded-full {{ $item->visibility === 'public' ? 'bg-green-500' : 'bg-gray-400' }}"></span>
-                                    {{ $item->visibility === 'public' ? 'Publik' : 'Internal' }}
-                                </button>
-                            </form>
-                        </td>
+
                         <td class="px-5 py-3">
                             <div class="flex items-center gap-2">
                                 <button onclick="this.closest('tr').nextElementSibling.classList.toggle('hidden')"
-                                    class="text-xs text-blue-600 hover:underline">Edit</button>
+                                    class="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 px-3 py-1 rounded-lg font-medium transition-colors">Edit</button>
                                 <form action="{{ route('dosen.publikasi.destroy', $item->id) }}" method="POST"
                                     onsubmit="return confirm('Hapus publikasi ini?')" class="inline">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="text-xs text-red-500 hover:underline">Hapus</button>
+                                    <button type="submit" class="text-xs bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-3 py-1 rounded-lg font-medium transition-colors">Hapus</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                     <!-- Edit Inline Row -->
                     <tr class="hidden bg-blue-50/20">
-                        <td colspan="6" class="px-5 py-4">
+                        <td colspan="7" class="px-5 py-4">
                             <form action="{{ route('dosen.publikasi.update', $item->id) }}" method="POST">
                                 @csrf @method('PUT')
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
@@ -187,12 +190,14 @@
                                         placeholder="https://doi.org/..."
                                         class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
                                 </div>
+                                <div class="mb-3">
+                                    <input type="text" name="authors" value="{{ $item->authors }}"
+                                        placeholder="Penulis 1, Penulis 2, ..."
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                                </div>
                                 <div class="flex gap-3">
-                                    <select name="visibility" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
-                                        <option value="public" {{ $item->visibility == 'public' ? 'selected' : '' }}>Publik</option>
-                                        <option value="private" {{ $item->visibility == 'private' ? 'selected' : '' }}>Internal</option>
-                                    </select>
                                     <button type="submit" class="bg-del text-white px-4 py-2 rounded-lg text-sm font-medium">Simpan</button>
+                                    <button type="button" onclick="this.closest('tr').classList.add('hidden')" class="px-4 py-2 rounded-lg text-sm text-gray-500 border border-gray-200">Batal</button>
                                 </div>
                             </form>
                         </td>
@@ -268,6 +273,7 @@ async function fetchFromBackend(doi) {
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
             }
         });
         const result = await res.json();
@@ -329,9 +335,19 @@ function applyDoi() {
     document.getElementById('field-publisher').value = doiData.publisher || '';
     document.getElementById('field-url').value       = doiData.publisher_url || '';
 
+    // Isi field authors dari data DOI (Crossref mengembalikan array author)
+    if (doiData.authors && Array.isArray(doiData.authors)) {
+        const authorStr = doiData.authors.map(a => {
+            if (a.family) return (a.given ? a.given + ' ' : '') + a.family;
+            return a.name || '';
+        }).filter(Boolean).join(', ');
+        document.getElementById('field-authors').value = authorStr;
+    }
+
     // Highlight fields yang diisi
-    ['field-title', 'field-year', 'field-publisher', 'field-url'].forEach(id => {
+    ['field-title', 'field-year', 'field-publisher', 'field-url', 'field-authors'].forEach(id => {
         const el = document.getElementById(id);
+        if (!el) return;
         el.classList.add('border-green-400', 'bg-green-50');
         setTimeout(() => el.classList.remove('border-green-400', 'bg-green-50'), 2000);
     });
@@ -349,10 +365,5 @@ function showStatus(msg, type) {
     else el.classList.add('text-blue-600');
     el.textContent = msg;
 }
-
-// Enter key pada input DOI
-document.getElementById('doi-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { e.preventDefault(); fetchDoi(); }
-});
 </script>
 @endpush
