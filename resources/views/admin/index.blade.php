@@ -161,7 +161,7 @@ const ADMIN_DATA = {
     '10':  {!! json_encode($adminChart10) !!},
     'all': {!! json_encode($adminChartAll) !!},
 };
-const ADMIN_RANGE_LABEL = { '5': '5 tahun terakhir', '10': '10 tahun terakhir', 'all': 'Seluruh tahun aktivitas tercatat' };
+const ADMIN_RANGE_LABEL = { '5': '5 tahun terakhir', '10': '10 tahun terakhir', 'all': 'Semua tahun' };
 
 function buildAdminChart() {
     const d = ADMIN_DATA[adminRange];
@@ -190,6 +190,14 @@ function buildAdminChart() {
             interaction: { mode:'index', intersect:false },
         }
     });
+    // Re-apply hidden state pakai getDatasetMeta (reliable)
+    if (typeof _adminHidden !== 'undefined') {
+        _adminHidden.forEach((hidden, i) => {
+            const meta = adminChart.getDatasetMeta(i);
+            if (meta) meta.hidden = hidden;
+        });
+        if (_adminHidden.some(h => h)) adminChart.update();
+    }
 }
 
 function setAdminRange(range) {
@@ -215,6 +223,22 @@ function setAdminType(type) {
     btn.classList.remove('text-gray-400');
     btn.classList.add('bg-white','text-del','shadow-sm');
     buildAdminChart();
+}
+
+
+// ─── Legend toggle ───────────────────────────────────────────────
+const _adminHidden = [false, false, false];
+function toggleAdminDataset(index) {
+    _adminHidden[index] = !_adminHidden[index];
+    const btn = document.getElementById('admin-legend-' + index);
+    const dot = document.getElementById('admin-legend-dot-' + index);
+    btn.classList.toggle('opacity-40', _adminHidden[index]);
+    dot.classList.toggle('opacity-30', _adminHidden[index]);
+    if (adminChart) {
+        const meta = adminChart.getDatasetMeta(index);
+        if (meta) meta.hidden = _adminHidden[index];
+        adminChart.update();
+    }
 }
 
 buildAdminChart();

@@ -494,6 +494,12 @@ function rebuildChart() {
         data: { labels: data.labels, datasets: buildDatasets(currentType, data) },
         options: commonOptions,
     });
+    // Re-apply hidden state pakai getDatasetMeta (reliable di Chart.js 4)
+    _pubHidden.forEach((hidden, i) => {
+        const meta = performaChart.getDatasetMeta(i);
+        if (meta) meta.hidden = hidden;
+    });
+    if (_pubHidden.some(h => h)) performaChart.update();
 }
 
 function setChartType(type) {
@@ -537,7 +543,8 @@ function togglePubDataset(index) {
         dot.classList.remove('opacity-30');
     }
     if (performaChart) {
-        performaChart.setDatasetVisibility(index, !_pubHidden[index]);
+        const meta = performaChart.getDatasetMeta(index);
+        if (meta) meta.hidden = _pubHidden[index];
         performaChart.update();
     }
 }

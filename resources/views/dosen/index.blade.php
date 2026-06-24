@@ -261,6 +261,12 @@ function rebuildDashChart() {
             interaction: { mode: 'index', intersect: false },
         }
     });
+    // Re-apply hidden state pakai getDatasetMeta (reliable di Chart.js 4)
+    _dashHidden.forEach((hidden, i) => {
+        const meta = dashboardChart.getDatasetMeta(i);
+        if (meta) meta.hidden = hidden;
+    });
+    if (_dashHidden.some(h => h)) dashboardChart.update();
 }
 function setDashChartType(type) {
     dashChartType = type;
@@ -297,7 +303,8 @@ function toggleDashDataset(index) {
         dot.classList.remove('opacity-30');
     }
     if (dashboardChart) {
-        dashboardChart.setDatasetVisibility(index, !_dashHidden[index]);
+        const meta = dashboardChart.getDatasetMeta(index);
+        if (meta) meta.hidden = _dashHidden[index];
         dashboardChart.update();
     }
 }
