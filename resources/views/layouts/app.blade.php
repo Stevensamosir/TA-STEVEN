@@ -67,14 +67,6 @@
                 </div>
             </a>
 
-            <!-- Nav Links -->
-            <div class="hidden md:flex items-center gap-6">
-                <a href="{{ route('public.dosen') }}"
-                   class="text-sm font-medium transition-colors {{ request()->routeIs('public.*') ? 'text-del font-semibold' : 'text-gray-600 hover:text-del' }}">
-                    Dosen
-                </a>
-            </div>
-
             <!-- Auth -->
             <div class="flex items-center gap-3">
                 @auth

@@ -1,15 +1,11 @@
 <?php
-
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
-class Research extends Model
+class Book extends Model
 {
-    protected $fillable = ['lecturer_id','title','year','month','funding_source','visibility','input_by_lppm_id'];
-
-    protected $table = 'researches';
-
+    protected $fillable = ['lecturer_id','title','year','publisher','isbn','visibility'];
+    protected $table = 'books';
     public function lecturer() { return $this->belongsTo(Lecturer::class); }
-
     public function scopePublic($query) { return $query->where('visibility','public'); }
 }

@@ -19,7 +19,7 @@
             @if($isDekan)
                 Sebagai <strong>Dekan</strong>, Anda dapat mengedit profil semua dosen.
             @elseif($isKaprodi)
-                Sebagai <strong>Kaprodi</strong>, Anda hanya dapat mengedit profil dosen di program studi Anda.
+                Sebagai <strong>Kaprodi</strong>, Anda hanya dapat <strong>melihat</strong> data dosen di program studi Anda. Perubahan data adalah wewenang Fakultas/SDM.
             @endif
         </p>
     </div>
@@ -60,24 +60,19 @@
 
     @foreach($lecturers as $lecturer)
     @php
-        // Tentukan apakah user yang login boleh mengedit dosen ini
-        $canEdit = false;
-        if ($isDekan) {
-            $canEdit = true;
-        } elseif ($isKaprodi) {
-            $isDosen      = $lecturer->user->role === 'dosen';
-            $sameProdi    = $lecturer->study_program_id === $myProdiId;
-            $isOwnAccount = $lecturer->user_id === $authUser->id;
-            // Kaprodi boleh edit: dosen di prodinya + profilnya sendiri
-            // Tidak boleh edit: dekan, kaprodi lain, dosen prodi lain
-            $canEdit = ($isDosen && $sameProdi) || $isOwnAccount;
-        }
+        // Kaprodi view-only (dikonfirmasi sebelumnya dari hasil wawancara
+        // requirement analysis -- Kaprodi cuma boleh lihat, bukan ubah).
+        $canEdit = $isDekan;
     @endphp
 
     <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 bg-gray-50 border-b border-gray-100">
             <div>
-                <h3 class="font-semibold text-gray-800">{{ $lecturer->user->name }}</h3>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <a href="{{ route('admin.internal.show', $lecturer->id) }}" class="font-semibold text-gray-800 hover:text-del hover:underline">
+                        {{ $lecturer->user->name }}
+                    </a>
+                </div>
                 <p class="text-xs text-gray-500 mt-0.5">
                     {{ $lecturer->studyProgram->name ?? '-' }} ·
                     NIDN: {{ $lecturer->nidn ?? '-' }} ·
@@ -106,7 +101,8 @@
             </div>
         </div>
 
-        <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <a href="{{ route('admin.internal.show', $lecturer->id) }}"
+           class="p-4 grid grid-cols-2 md:grid-cols-4 gap-3 hover:bg-gray-50/60 transition-colors">
             <div class="bg-blue-50 rounded-xl p-3 text-center">
                 <div class="font-bold text-del">{{ $lecturer->educations->count() }}</div>
                 <div class="text-xs text-gray-500">Pendidikan</div>
@@ -127,7 +123,7 @@
                 <div class="text-xs text-gray-500">Publikasi</div>
 
             </div>
-        </div>
+        </a>
     </div>
     @endforeach
 </div>

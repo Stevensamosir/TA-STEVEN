@@ -5,11 +5,10 @@
 @section('content')
 <div class="pt-4">
 
-    {{-- Grid: 2 kolom untuk Dekan (profil kiri, transfer jabatan kanan), 1 kolom untuk Dosen/Kaprodi --}}
-    <div class="{{ auth()->user()->isDekan() ? 'grid grid-cols-1 xl:grid-cols-3 gap-6 items-start' : 'max-w-2xl' }}">
+    <div class="max-w-2xl">
 
-        {{-- ── Kolom Kiri / Utama: Form Edit Profil ── --}}
-        <div class="{{ auth()->user()->isDekan() ? 'xl:col-span-2' : '' }}">
+        {{-- ── Form Edit Profil ── --}}
+        <div>
             <div class="bg-white rounded-2xl border border-gray-100 p-6">
                 <form action="{{ route('dosen.profil.update') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                     @csrf @method('PUT')
@@ -91,20 +90,6 @@
                             placeholder="Contoh: Rekayasa Perangkat Lunak, Machine Learning, Web Development">{{ old('expertise', $lecturer->expertise) }}</textarea>
                     </div>
 
-                    {{-- Visibilitas Profil --}}
-                    <div class="bg-gray-50 rounded-xl p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-800">Profil Publik</p>
-                                <p class="text-xs text-gray-500 mt-0.5">Aktifkan agar profil terlihat oleh pengunjung tanpa login</p>
-                            </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" name="is_public" value="1" class="sr-only peer" {{ $lecturer->is_public ? 'checked' : '' }}>
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-del"></div>
-                            </label>
-                        </div>
-                    </div>
-
                     <div class="flex gap-3 pt-2">
                         <button type="submit" class="bg-del text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-del-light transition-colors">
                             Simpan Perubahan
@@ -116,56 +101,6 @@
                 </form>
             </div>
         </div>
-
-        {{-- ── Kolom Kanan: Transfer Jabatan Dekan (hanya Dekan) ── --}}
-        @if(auth()->user()->isDekan())
-        <div class="xl:col-span-1">
-            <div class="bg-white rounded-2xl border border-red-100 p-5 sticky top-6">
-                <div class="flex items-start gap-3 mb-4">
-                    <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-800">Alihkan Jabatan Dekan</h3>
-                        <p class="text-xs text-gray-500 mt-0.5">
-                            Setelah dikonfirmasi, Anda otomatis turun menjadi Dosen dan sesi Anda akan berakhir.
-                        </p>
-                    </div>
-                </div>
-
-                @if($errors->has('transfer_to_lecturer_id'))
-                    <div class="mb-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
-                        {{ $errors->first('transfer_to_lecturer_id') }}
-                    </div>
-                @endif
-
-                <form action="{{ route('dosen.transfer-dekan') }}" method="POST"
-                      onsubmit="return confirm('Yakin ingin mengalihkan jabatan Dekan? Sesi Anda akan berakhir setelah ini.')">
-                    @csrf
-                    <label class="block text-xs font-medium text-gray-700 mb-1.5">
-                        Pilih Penerima Jabatan <span class="text-red-500">*</span>
-                    </label>
-                    <select name="transfer_to_lecturer_id" required
-                        class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white mb-3">
-                        <option value="">— Pilih dosen aktif —</option>
-                        @foreach($allLecturers as $lec)
-                            <option value="{{ $lec->id }}">
-                                {{ $lec->user->name }}
-                                ({{ $lec->studyProgram->name ?? '-' }})
-                            </option>
-                        @endforeach
-                    </select>
-                    <button type="submit"
-                        class="w-full px-4 py-2.5 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600 transition-colors">
-                        Alihkan Jabatan
-                    </button>
-                </form>
-            </div>
-        </div>
-        @endif
 
     </div>
 </div>

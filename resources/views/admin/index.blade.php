@@ -33,13 +33,9 @@
 
 {{-- Quick links --}}
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-    <a href="{{ route('admin.dosen') }}" class="flex items-center gap-3 bg-del text-white px-5 py-4 rounded-xl hover:bg-del-light transition-colors shadow-sm">
-        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        <div><p class="text-sm font-semibold">Kelola Dosen</p><p class="text-xs text-blue-200">Tambah / edit akun dosen</p></div>
-    </a>
-    <a href="{{ route('admin.hierarki') }}" class="flex items-center gap-3 bg-white border border-gray-200 text-gray-700 px-5 py-4 rounded-xl hover:border-del hover:text-del transition-colors shadow-sm">
-        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"/></svg>
-        <div><p class="text-sm font-semibold">Hierarki Kaprodi</p><p class="text-xs text-gray-400">Atur Kaprodi per prodi</p></div>
+    <a href="{{ route('admin.laporan-tridharma') }}" class="flex items-center gap-3 bg-white border border-gray-200 text-gray-700 px-5 py-4 rounded-xl hover:border-del hover:text-del transition-colors shadow-sm">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <div><p class="text-sm font-semibold">Laporan Tridharma</p><p class="text-xs text-gray-400">Rekap penelitian &amp; PKM per periode</p></div>
     </a>
     <a href="{{ route('admin.internal') }}" class="flex items-center gap-3 bg-white border border-gray-200 text-gray-700 px-5 py-4 rounded-xl hover:border-del hover:text-del transition-colors shadow-sm">
         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586l5.414 5.414V19a2 2 0 01-2 2z"/></svg>
@@ -115,7 +111,7 @@ $adminAllZero = max(array_merge($adminChart5['penelitian'], $adminChart5['pengab
 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm">
     <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
         <h2 class="text-sm font-semibold text-gray-800">Dosen Terbaru Ditambahkan</h2>
-        <a href="{{ route('admin.dosen') }}" class="text-xs text-del hover:underline font-medium">Lihat semua →</a>
+        <a href="{{ route('admin.internal') }}" class="text-xs text-del hover:underline font-medium">Lihat semua →</a>
     </div>
     <div class="divide-y divide-gray-50">
         @forelse($recentDosen as $dosen)
@@ -137,7 +133,7 @@ $adminAllZero = max(array_merge($adminChart5['penelitian'], $adminChart5['pengab
                 <span class="text-xs px-2.5 py-1 rounded-full font-medium {{ $dosen->is_public ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500' }}">
                     {{ $dosen->is_public ? 'Publik' : 'Internal' }}
                 </span>
-                <a href="{{ route('admin.dosen.edit', $dosen->id) }}" class="text-xs text-del hover:underline font-medium">Edit</a>
+                <a href="{{ route('admin.profil.edit', $dosen->id) }}" class="text-xs text-del hover:underline font-medium">Edit</a>
             </div>
         </div>
         @empty

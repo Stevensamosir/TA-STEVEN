@@ -79,25 +79,6 @@
                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del resize-none">{{ old('expertise', $lecturer->expertise) }}</textarea>
             </div>
 
-            {{-- Visibilitas Profil --}}
-            <div class="bg-gray-50 rounded-xl p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-800">Profil Publik</p>
-                        <p class="text-xs text-gray-500 mt-0.5">Aktifkan agar profil terlihat oleh pengunjung tanpa login</p>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="is_public" value="1" class="sr-only peer"
-                            {{ old('is_public', $lecturer->is_public) ? 'checked' : '' }}>
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer
-                            peer-checked:after:translate-x-full peer-checked:after:border-white
-                            after:content-[''] after:absolute after:top-[2px] after:left-[2px]
-                            after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
-                            peer-checked:bg-del"></div>
-                    </label>
-                </div>
-            </div>
-
             {{-- Tombol --}}
             <div class="flex gap-3 pt-2">
                 <button type="submit"

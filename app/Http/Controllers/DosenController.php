@@ -9,6 +9,10 @@ use App\Models\Education;
 use App\Models\Research;
 use App\Models\CommunityService;
 use App\Models\Publication;
+use App\Models\Book;
+use App\Models\Hki;
+use App\Models\Award;
+use App\Models\Schedule;
 
 class DosenController extends Controller
 {
@@ -85,15 +89,7 @@ class DosenController extends Controller
     {
         $lecturer = $this->getLecturer()->load('studyProgram');
 
-        // Untuk Dekan: kirim daftar semua dosen aktif (untuk dropdown transfer jabatan)
-        $allLecturers = collect();
-        if (auth()->user()->isDekan()) {
-            $allLecturers = \App\Models\Lecturer::with(['user', 'studyProgram'])
-                ->whereHas('user', fn($q) => $q->where('is_active', true)->where('role', '!=', 'dekan'))
-                ->get();
-        }
-
-        return view('dosen.profil', compact('lecturer', 'allLecturers'));
+        return view('dosen.profil', compact('lecturer'));
     }
 
     public function updateProfil(Request $request)
@@ -108,7 +104,6 @@ class DosenController extends Controller
         ]);
 
         $data = $request->only(['nidn', 'jabatan_fungsional', 'expertise']);
-        $data['is_public'] = $request->boolean('is_public');
 
         if ($request->hasFile('photo')) {
             if ($lecturer->photo) Storage::disk('public')->delete($lecturer->photo);
@@ -190,10 +185,11 @@ class DosenController extends Controller
         $request->validate([
             'title'          => 'required|string|max:500',
             'year'           => 'required|integer|min:1970|max:'.date('Y'),
+            'month'          => 'required|integer|min:1|max:12',
             'funding_source' => 'nullable|string|max:255',
             'visibility'     => 'required|in:public,private',
         ]);
-        $this->getLecturer()->researches()->create($request->only(['title','year','funding_source','visibility']));
+        $this->getLecturer()->researches()->create($request->only(['title','year','month','funding_source','visibility']));
         return back()->with('success', 'Data penelitian ditambahkan.');
     }
 
@@ -202,11 +198,12 @@ class DosenController extends Controller
         $request->validate([
             'title'          => 'required|string|max:500',
             'year'           => 'required|integer|min:1970|max:'.date('Y'),
+            'month'          => 'required|integer|min:1|max:12',
             'funding_source' => 'nullable|string|max:255',
             'visibility'     => 'required|in:public,private',
         ]);
         Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['title','year','funding_source','visibility']));
+            ->update($request->only(['title','year','month','funding_source','visibility']));
         return back()->with('success', 'Data penelitian diperbarui.');
     }
 
@@ -227,7 +224,6 @@ class DosenController extends Controller
     public function pengabdian()
     {
         $lecturer    = $this->getLecturer();
-        // ✅ FIX: $pengabdians (bukan $pengabdian)
         $pengabdians = $lecturer->communityServices()->orderByDesc('year')->get();
         return view('dosen.pengabdian', compact('lecturer', 'pengabdians'));
     }
@@ -235,38 +231,57 @@ class DosenController extends Controller
     public function storePengabdian(Request $request)
     {
         $request->validate([
-            'title'      => 'required|string|max:500',
-            'year'       => 'required|integer|min:1970|max:'.date('Y'),
-            'location'   => 'nullable|string|max:255',
-            'visibility' => 'required|in:public,private',
+            'title'           => 'required|string|max:500',
+            'year'            => 'required|integer|min:1970|max:'.date('Y'),
+            'month'           => 'required|integer|min:1|max:12',
+            'location'        => 'nullable|string|max:255',
+            'pkm_type'        => 'nullable|in:Internal,Nasional,Internasional',
+            'pkm_scheme'      => 'nullable|in:PKM-RE,PKM-RSH,PKM-K,PKM-PM,PKM-PI,PKM-KC,PKM-KI,PKM-VGK,PKM-AI,PKM-GFT',
+            'student_members' => 'nullable|string|max:1000',
+            'visibility'      => 'required|in:public,private',
         ]);
-        $this->getLecturer()->communityServices()->create($request->only(['title','year','location','visibility']));
+        $this->getLecturer()->communityServices()->create(
+            $request->only(['title','year','month','location','pkm_type','pkm_scheme','student_members','visibility']),
+            ['role' => 'Ketua']
+        );
         return back()->with('success', 'Data pengabdian ditambahkan.');
     }
 
     public function updatePengabdian(Request $request, $id)
     {
         $request->validate([
-            'title'      => 'required|string|max:500',
-            'year'       => 'required|integer|min:1970|max:'.date('Y'),
-            'location'   => 'nullable|string|max:255',
-            'visibility' => 'required|in:public,private',
+            'title'           => 'required|string|max:500',
+            'year'            => 'required|integer|min:1970|max:'.date('Y'),
+            'month'           => 'required|integer|min:1|max:12',
+            'location'        => 'nullable|string|max:255',
+            'pkm_type'        => 'nullable|in:Internal,Nasional,Internasional',
+            'pkm_scheme'      => 'nullable|in:PKM-RE,PKM-RSH,PKM-K,PKM-PM,PKM-PI,PKM-KC,PKM-KI,PKM-VGK,PKM-AI,PKM-GFT',
+            'student_members' => 'nullable|string|max:1000',
+            'visibility'      => 'required|in:public,private',
         ]);
-        CommunityService::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['title','year','location','visibility']));
+        $item = $this->getLecturer()->communityServices()->where('community_services.id', $id)->firstOrFail();
+        $item->update($request->only(['title','year','month','location','pkm_type','pkm_scheme','student_members','visibility']));
         return back()->with('success', 'Data pengabdian diperbarui.');
     }
 
     public function destroyPengabdian($id)
     {
-        CommunityService::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
+        $lecturer = $this->getLecturer();
+        $item = $lecturer->communityServices()->where('community_services.id', $id)->firstOrFail();
+        $lecturer->communityServices()->detach($item->id);
+
+        // Kalau sudah tidak ada dosen lain yang terhubung ke PKM ini, hapus permanen
+        if ($item->lecturers()->count() === 0) {
+            $item->delete();
+        }
+
         return back()->with('success', 'Data pengabdian dihapus.');
     }
 
     public function togglePengabdianVisibility($id)
     {
-        $cs = CommunityService::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $cs->update(['visibility' => $cs->visibility === 'public' ? 'private' : 'public']);
+        $item = $this->getLecturer()->communityServices()->where('community_services.id', $id)->firstOrFail();
+        $item->update(['visibility' => $item->visibility === 'public' ? 'private' : 'public']);
         return back()->with('success', 'Visibilitas diperbarui.');
     }
 
@@ -319,79 +334,200 @@ class DosenController extends Controller
         return back()->with('success', 'Visibilitas diperbarui.');
     }
 
-    // ─── TRANSFER JABATAN DEKAN (Dekan only, dari profil sendiri) ───
-    public function transferDekan(Request $request)
+    // ─── BUKU ──────────────────────────────────────────
+    public function buku()
     {
-        $auth = auth()->user();
+        $lecturer = $this->getLecturer();
+        $bukus    = $lecturer->books()->orderByDesc('year')->get();
+        return view('dosen.buku', compact('lecturer', 'bukus'));
+    }
 
-        // Hanya Dekan yang bisa
-        if (!$auth->isDekan()) {
-            abort(403, 'Hanya Dekan yang dapat mengalihkan jabatan.');
-        }
-
+    public function storeBuku(Request $request)
+    {
         $request->validate([
-            'transfer_to_lecturer_id' => 'required|exists:lecturers,id',
+            'title'      => 'required|string|max:500',
+            'year'       => 'required|integer|min:1970|max:'.date('Y'),
+            'publisher'  => 'nullable|string|max:255',
+            'isbn'       => 'nullable|string|max:30',
+            'visibility' => 'required|in:public,private',
         ]);
+        $this->getLecturer()->books()->create($request->only(['title','year','publisher','isbn','visibility']));
+        return back()->with('success', 'Data buku berhasil ditambahkan.');
+    }
 
-        $targetLecturer = \App\Models\Lecturer::with('user')->findOrFail($request->transfer_to_lecturer_id);
+    public function updateBuku(Request $request, $id)
+    {
+        $request->validate([
+            'title'      => 'required|string|max:500',
+            'year'       => 'required|integer|min:1970|max:'.date('Y'),
+            'publisher'  => 'nullable|string|max:255',
+            'isbn'       => 'nullable|string|max:30',
+            'visibility' => 'required|in:public,private',
+        ]);
+        Book::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
+            ->update($request->only(['title','year','publisher','isbn','visibility']));
+        return back()->with('success', 'Data buku diperbarui.');
+    }
 
-        // Pastikan target bukan Dekan itu sendiri
-        if ($targetLecturer->user_id === $auth->id) {
-            return back()->withErrors(['transfer_to_lecturer_id' => 'Tidak dapat mengalihkan jabatan ke diri sendiri.']);
-        }
+    public function destroyBuku($id)
+    {
+        Book::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
+        return back()->with('success', 'Data buku dihapus.');
+    }
 
-        // Pastikan target adalah dosen aktif (bukan Dekan lain)
-        if (!$targetLecturer->user->is_active) {
-            return back()->withErrors(['transfer_to_lecturer_id' => 'Akun tujuan tidak aktif.']);
-        }
-        if ($targetLecturer->user->role === 'dekan') {
-            return back()->withErrors(['transfer_to_lecturer_id' => 'Akun tujuan sudah menjabat sebagai Dekan.']);
-        }
+    public function toggleBukuVisibility($id)
+    {
+        $b = Book::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
+        $b->update(['visibility' => $b->visibility === 'public' ? 'private' : 'public']);
+        return back()->with('success', 'Visibilitas diperbarui.');
+    }
 
-        // Simpan role lama target untuk notifikasi
-        $targetOldRole = $targetLecturer->user->role;
-        $targetName    = $targetLecturer->user->name;
+    // ─── HKI ───────────────────────────────────────────
+    public function hki()
+    {
+        $lecturer = $this->getLecturer();
+        $hkis     = $lecturer->hkis()->orderByDesc('year')->get();
+        return view('dosen.hki', compact('lecturer', 'hkis'));
+    }
 
-        // ✅ FIX: Jika target adalah Kaprodi aktif, kosongkan head_lecturer_id prodinya
-        // agar prodi tidak menjadi tanpa kaprodi secara diam-diam
-        if ($targetOldRole === 'kaprodi') {
-            \App\Models\StudyProgram::where('head_lecturer_id', $targetLecturer->id)
-                ->update(['head_lecturer_id' => null]);
-        }
+    public function storeHki(Request $request)
+    {
+        $request->validate([
+            'title'              => 'required|string|max:500',
+            'year'               => 'required|integer|min:1970|max:'.date('Y'),
+            'type'               => 'nullable|string|max:100',
+            'certificate_number' => 'nullable|string|max:100',
+            'visibility'         => 'required|in:public,private',
+        ]);
+        $this->getLecturer()->hkis()->create($request->only(['title','year','type','certificate_number','visibility']));
+        return back()->with('success', 'Data HKI berhasil ditambahkan.');
+    }
 
-        // 1. Turunkan Dekan saat ini menjadi Dosen
-        $auth->update(['role' => 'dosen']);
+    public function updateHki(Request $request, $id)
+    {
+        $request->validate([
+            'title'              => 'required|string|max:500',
+            'year'               => 'required|integer|min:1970|max:'.date('Y'),
+            'type'               => 'nullable|string|max:100',
+            'certificate_number' => 'nullable|string|max:100',
+            'visibility'         => 'required|in:public,private',
+        ]);
+        Hki::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
+            ->update($request->only(['title','year','type','certificate_number','visibility']));
+        return back()->with('success', 'Data HKI diperbarui.');
+    }
 
-        // 2. Angkat target menjadi Dekan baru
-        $targetLecturer->user->update(['role' => 'dekan']);
+    public function destroyHki($id)
+    {
+        Hki::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
+        return back()->with('success', 'Data HKI dihapus.');
+    }
 
-        // 3. Logout sesi Dekan lama dan redirect ke login
-        auth()->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+    public function toggleHkiVisibility($id)
+    {
+        $h = Hki::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
+        $h->update(['visibility' => $h->visibility === 'public' ? 'private' : 'public']);
+        return back()->with('success', 'Visibilitas diperbarui.');
+    }
 
-        return redirect()->route('login')
-            ->with('success', "Jabatan Dekan berhasil dialihkan ke {$targetName}. Silakan login ulang.");
+    // ─── PENGHARGAAN ───────────────────────────────────
+    public function penghargaan()
+    {
+        $lecturer  = $this->getLecturer();
+        $penghargaans = $lecturer->awards()->orderByDesc('date')->get();
+        return view('dosen.penghargaan', compact('lecturer', 'penghargaans'));
+    }
+
+    public function storePenghargaan(Request $request)
+    {
+        $request->validate([
+            'name'         => 'required|string|max:500',
+            'level'        => 'required|in:Internasional,Nasional,Lokal',
+            'organizer'    => 'nullable|string|max:255',
+            'rank'         => 'nullable|string|max:100',
+            'date'         => 'required|date',
+            'evidence_url' => 'nullable|url|max:500',
+            'visibility'   => 'required|in:public,private',
+        ]);
+        $this->getLecturer()->awards()->create($request->only(['name','level','organizer','rank','date','evidence_url','visibility']));
+        return back()->with('success', 'Data penghargaan berhasil ditambahkan.');
+    }
+
+    public function updatePenghargaan(Request $request, $id)
+    {
+        $request->validate([
+            'name'         => 'required|string|max:500',
+            'level'        => 'required|in:Internasional,Nasional,Lokal',
+            'organizer'    => 'nullable|string|max:255',
+            'rank'         => 'nullable|string|max:100',
+            'date'         => 'required|date',
+            'evidence_url' => 'nullable|url|max:500',
+            'visibility'   => 'required|in:public,private',
+        ]);
+        Award::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
+            ->update($request->only(['name','level','organizer','rank','date','evidence_url','visibility']));
+        return back()->with('success', 'Data penghargaan diperbarui.');
+    }
+
+    public function destroyPenghargaan($id)
+    {
+        Award::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
+        return back()->with('success', 'Data penghargaan dihapus.');
+    }
+
+    public function togglePenghargaanVisibility($id)
+    {
+        $a = Award::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
+        $a->update(['visibility' => $a->visibility === 'public' ? 'private' : 'public']);
+        return back()->with('success', 'Visibilitas diperbarui.');
+    }
+
+    // ─── JADWAL DOSEN (kalender ketersediaan pribadi, BUKAN jadwal CIS) ───
+    public function jadwal()
+    {
+        $lecturer = $this->getLecturer();
+        $jadwals  = $lecturer->schedules()
+            ->orderByRaw("FIELD(day,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu')")
+            ->orderBy('start_time')
+            ->get();
+        return view('dosen.jadwal', compact('lecturer', 'jadwals'));
+    }
+
+    public function storeJadwal(Request $request)
+    {
+        $request->validate([
+            'day'         => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
+            'start_time'  => 'required|date_format:H:i',
+            'end_time'    => 'required|date_format:H:i|after:start_time',
+            'description' => 'nullable|string|max:255',
+            'status'      => 'required|in:Tersedia,Tidak Tersedia',
+        ]);
+        $this->getLecturer()->schedules()->create($request->only(['day','start_time','end_time','description','status']));
+        return back()->with('success', 'Jadwal berhasil ditambahkan.');
+    }
+
+    public function updateJadwal(Request $request, $id)
+    {
+        $request->validate([
+            'day'         => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
+            'start_time'  => 'required|date_format:H:i',
+            'end_time'    => 'required|date_format:H:i|after:start_time',
+            'description' => 'nullable|string|max:255',
+            'status'      => 'required|in:Tersedia,Tidak Tersedia',
+        ]);
+        Schedule::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
+            ->update($request->only(['day','start_time','end_time','description','status']));
+        return back()->with('success', 'Jadwal diperbarui.');
+    }
+
+    public function destroyJadwal($id)
+    {
+        Schedule::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
+        return back()->with('success', 'Jadwal dihapus.');
     }
 
     // ─── PASSWORD ────────────────────────────────────────────
-    public function editPassword()
-    {
-        return view('dosen.password');
-    }
-
-    public function updatePassword(Request $request)
-    {
-        $request->validate([
-            'current_password' => 'required',
-            'password'         => 'required|min:8|confirmed',
-        ]);
-
-        if (!Hash::check($request->current_password, auth()->user()->password)) {
-            return back()->withErrors(['current_password' => 'Password lama tidak sesuai.']);
-        }
-
-        auth()->user()->update(['password' => Hash::make($request->password)]);
-        return back()->with('success', 'Password berhasil diubah.');
-    }
+    // Dihapus: tidak ada password lokal untuk role dosen/kaprodi/dekan/lppm,
+    // semua autentikasi lewat CIS. Ganti password lewat SSO Institut
+    // Teknologi Del (https://sso.del.ac.id), bukan dari SIPD.
 }

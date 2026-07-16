@@ -5,6 +5,7 @@ use App\Http\Controllers\PublicController;
 use App\Http\Controllers\DosenController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DoiController;
+use App\Http\Controllers\LPPMController;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PUBLIC — Tidak perlu login
@@ -59,12 +60,32 @@ Route::middleware(['auth', 'role:dosen,kaprodi,dekan'])->prefix('dashboard')->na
     Route::delete('/publikasi/{id}',            [DosenController::class, 'destroyPublikasi'])->name('publikasi.destroy');
     Route::patch('/publikasi/{id}/visibility',  [DosenController::class, 'togglePublikasiVisibility'])->name('publikasi.visibility');
 
-    // Password
-    Route::get('/password', [DosenController::class, 'editPassword'])->name('password');
-    Route::put('/password', [DosenController::class, 'updatePassword'])->name('password.update');
+    // Buku
+    Route::get('/buku',                   [DosenController::class, 'buku'])->name('buku');
+    Route::post('/buku',                  [DosenController::class, 'storeBuku'])->name('buku.store');
+    Route::put('/buku/{id}',              [DosenController::class, 'updateBuku'])->name('buku.update');
+    Route::delete('/buku/{id}',           [DosenController::class, 'destroyBuku'])->name('buku.destroy');
+    Route::patch('/buku/{id}/visibility', [DosenController::class, 'toggleBukuVisibility'])->name('buku.visibility');
 
-    // Transfer Jabatan Dekan (hanya Dekan yang bisa, guard ada di controller)
-    Route::post('/transfer-dekan', [DosenController::class, 'transferDekan'])->name('transfer-dekan');
+    // HKI
+    Route::get('/hki',                   [DosenController::class, 'hki'])->name('hki');
+    Route::post('/hki',                  [DosenController::class, 'storeHki'])->name('hki.store');
+    Route::put('/hki/{id}',              [DosenController::class, 'updateHki'])->name('hki.update');
+    Route::delete('/hki/{id}',           [DosenController::class, 'destroyHki'])->name('hki.destroy');
+    Route::patch('/hki/{id}/visibility', [DosenController::class, 'toggleHkiVisibility'])->name('hki.visibility');
+
+    // Penghargaan
+    Route::get('/penghargaan',                   [DosenController::class, 'penghargaan'])->name('penghargaan');
+    Route::post('/penghargaan',                  [DosenController::class, 'storePenghargaan'])->name('penghargaan.store');
+    Route::put('/penghargaan/{id}',              [DosenController::class, 'updatePenghargaan'])->name('penghargaan.update');
+    Route::delete('/penghargaan/{id}',           [DosenController::class, 'destroyPenghargaan'])->name('penghargaan.destroy');
+    Route::patch('/penghargaan/{id}/visibility', [DosenController::class, 'togglePenghargaanVisibility'])->name('penghargaan.visibility');
+
+    // Jadwal Dosen
+    Route::get('/jadwal',        [DosenController::class, 'jadwal'])->name('jadwal');
+    Route::post('/jadwal',       [DosenController::class, 'storeJadwal'])->name('jadwal.store');
+    Route::put('/jadwal/{id}',   [DosenController::class, 'updateJadwal'])->name('jadwal.update');
+    Route::delete('/jadwal/{id}', [DosenController::class, 'destroyJadwal'])->name('jadwal.destroy');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -73,27 +94,7 @@ Route::middleware(['auth', 'role:dosen,kaprodi,dekan'])->prefix('dashboard')->na
 // + assertDekanOnly() di dalam controller sebagai defense-in-depth
 // ─────────────────────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:dekan'])->prefix('admin')->name('admin.')->group(function () {
-    // Dashboard
     Route::get('/', [AdminController::class, 'index'])->name('index');
-
-    // Kelola Akun Dosen (CREATE, UPDATE, RESET PASSWORD, TOGGLE ACTIVE, TOGGLE VISIBILITY)
-    Route::get('/dosen',                       [AdminController::class, 'dosenList'])->name('dosen');
-    Route::get('/dosen/create',                [AdminController::class, 'createDosen'])->name('dosen.create');
-    Route::post('/dosen',                      [AdminController::class, 'storeDosen'])->name('dosen.store');
-    Route::get('/dosen/{id}/edit',             [AdminController::class, 'editDosen'])->name('dosen.edit');
-    Route::put('/dosen/{id}',                  [AdminController::class, 'updateDosen'])->name('dosen.update');
-    Route::patch('/dosen/{id}/reset-password', [AdminController::class, 'resetPassword'])->name('dosen.reset-password');
-    Route::patch('/dosen/{id}/toggle-active',  [AdminController::class, 'toggleActive'])->name('dosen.toggle-active');
-    Route::delete('/dosen/{id}',               [AdminController::class, 'destroyDosen'])->name('dosen.destroy');
-    Route::patch('/dosen/{id}/visibility',     [AdminController::class, 'toggleVisibility'])->name('dosen.visibility');
-
-    // Hierarki & Program Studi
-    Route::get('/hierarki',        [AdminController::class, 'hierarki'])->name('hierarki');
-    Route::put('/hierarki/{id}',   [AdminController::class, 'updateHierarki'])->name('hierarki.update');
-    Route::get('/prodi',           [AdminController::class, 'prodiList'])->name('prodi');
-    Route::post('/prodi',          [AdminController::class, 'storeProdi'])->name('prodi.store');
-    Route::put('/prodi/{id}',      [AdminController::class, 'updateProdi'])->name('prodi.update');
-    Route::delete('/prodi/{id}',   [AdminController::class, 'destroyProdi'])->name('prodi.destroy');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -110,12 +111,26 @@ Route::middleware(['auth', 'role:dekan'])->prefix('admin')->name('admin.')->grou
 // AdminController.
 // ─────────────────────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:dekan,kaprodi'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/internal',     [AdminController::class, 'internal'])->name('internal');
-    Route::get('/profil/{id}',  [AdminController::class, 'editProfilDosen'])->name('profil.edit');
-    Route::put('/profil/{id}',  [AdminController::class, 'updateProfilDosen'])->name('profil.update');
+    Route::get('/internal',           [AdminController::class, 'internal'])->name('internal');
+    Route::get('/internal/{id}',      [AdminController::class, 'internalShow'])->name('internal.show');
+    Route::get('/profil/{id}',        [AdminController::class, 'editProfilDosen'])->name('profil.edit');
+    Route::put('/profil/{id}',        [AdminController::class, 'updateProfilDosen'])->name('profil.update');
+    Route::get('/laporan-tridharma',             [AdminController::class, 'laporanTridharma'])->name('laporan-tridharma');
+    Route::get('/laporan-tridharma/export/pdf',  [AdminController::class, 'exportLaporanTridharmaPdf'])->name('laporan-tridharma.export.pdf');
+    Route::get('/penjadwalan',        [AdminController::class, 'penjadwalan'])->name('penjadwalan');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DOI LOOKUP — Public API (Crossref adalah public API, tidak perlu login)
 // ─────────────────────────────────────────────────────────────────────────────
 Route::get('/api/doi', [DoiController::class, 'fetch'])->name('api.doi');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LPPM — input Penelitian & PKM dosen
+// ─────────────────────────────────────────────────────────────────────────────
+Route::middleware(['auth', 'role:lppm'])->prefix('lppm')->name('lppm.')->group(function () {
+    Route::get('/',              [LPPMController::class, 'index'])->name('index');
+    Route::get('/search-dosen',  [LPPMController::class, 'searchDosen'])->name('search-dosen');
+    Route::post('/penelitian',   [LPPMController::class, 'storePenelitian'])->name('penelitian.store');
+    Route::post('/pkm',          [LPPMController::class, 'storePkm'])->name('pkm.store');
+});

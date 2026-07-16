@@ -10,9 +10,9 @@ class Lecturer extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'study_program_id', 'nidn',
-        'jabatan_fungsional',
-        'expertise', 'photo', 'is_public',
+    'user_id', 'study_program_id', 'cis_pegawai_id', 'nip', 'alias', 'nidn',
+    'jabatan_fungsional', 'jenjang_pendidikan',
+    'expertise', 'photo', 'is_public',
     ];
 
     /**
@@ -55,13 +55,20 @@ class Lecturer extends Model
 
     public function communityServices()
     {
-        return $this->hasMany(CommunityService::class);
+        return $this->belongsToMany(CommunityService::class, 'lecturer_community_service')
+                     ->withPivot('role')
+                     ->withTimestamps();
     }
 
     public function publications()
     {
         return $this->hasMany(Publication::class);
     }
+
+    public function books() { return $this->hasMany(Book::class); }
+    public function hkis() { return $this->hasMany(Hki::class); }
+    public function awards() { return $this->hasMany(Award::class); }
+    public function schedules() { return $this->hasMany(Schedule::class); }
 
     // === SCOPE: hanya data publik ===
     public function scopePublic($query)

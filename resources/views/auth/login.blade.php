@@ -45,12 +45,13 @@
             <form action="{{ route('login') }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
-                    <label class="text-sm font-medium text-gray-700 block mb-1.5">Email</label>
-                    <input type="email" name="email" value="{{ old('email') }}" required
-                           autocomplete="off"
-                           class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del transition"
-                           placeholder="nama@itdel.ac.id">
+                    <label class="text-sm font-medium text-gray-700 block mb-1.5">Username CIS</label>
+                    <input type="text" name="username" value="{{ old('username') }}" required
+                    autocomplete="off"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del transition"
+                    placeholder="nama.belakang">
                 </div>
+                <p class="text-xs text-gray-400 -mt-2">Gunakan username & password akun CIS Institut Teknologi Del Anda.</p>
                 <div>
                     <label class="text-sm font-medium text-gray-700 block mb-1.5">Password</label>
                     <div class="relative">

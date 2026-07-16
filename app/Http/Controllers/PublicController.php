@@ -13,16 +13,8 @@ class PublicController extends Controller
 
         $lecturers = Lecturer::with(['user', 'studyProgram'])
             ->where('is_public', true)
+            ->whereHas('user', fn($u) => $u->where('is_active', true))
             ->when($request->search, function ($q) use ($request) {
-                // PENTING: seluruh kondisi OR di-bungkus dalam satu closure
-                // (where(function...)) supaya tidak "bocor" keluar dari syarat
-                // is_public=true & filter prodi. Tanpa pembungkus ini, Laravel
-                // akan menempatkan orWhere() sejajar dengan where('is_public',
-                // true) di level query utama — yang secara presedensi SQL
-                // berarti dosen NON-PUBLIK (internal-only) bisa ikut nongol di
-                // hasil pencarian publik kalau expertise/jabatannya kebetulan
-                // cocok dengan kata kunci. Filter prodi juga jadi tidak
-                // berfungsi saat dipakai bersamaan dengan pencarian.
                 $q->where(function ($sub) use ($request) {
                     $sub->whereHas('user', fn($u) => $u->where('name', 'like', '%'.$request->search.'%'))
                         ->orWhere('expertise', 'like', '%'.$request->search.'%')
@@ -39,30 +31,29 @@ class PublicController extends Controller
 
     public function show(Request $request, $id)
     {
+        // FIX BUG PRIVASI: semua eager load SEKARANG difilter visibility=public,
+        // supaya data yang ditandai Privat oleh dosen TIDAK bocor ke pengunjung
+        // tanpa login. Sebelumnya tidak difilter sama sekali.
         $lecturer = Lecturer::with([
             'user', 'studyProgram',
-            'educations'        => fn($q) => $q->orderByDesc('year'),
-            'researches'        => fn($q) => $q->orderByDesc('year'),
-            'communityServices' => fn($q) => $q->orderByDesc('year'),
-            'publications'      => fn($q) => $q->orderByDesc('year'),
+            'educations'        => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
+            'researches'        => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
+            'communityServices' => fn($q) => $q->where('community_services.visibility', 'public')->orderByDesc('year'),
+            'publications'      => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
+            'books'             => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
+            'hkis'              => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
+            'awards'            => fn($q) => $q->where('visibility', 'public')->orderByDesc('date'),
         ])->where('is_public', true)->findOrFail($id);
 
-        // ── Tahun filter publikasi ────────────────────────────────
         $filterYear  = $request->year;
         $pubYears    = $lecturer->publications->pluck('year')->unique()->sortDesc()->values();
         $publications = $filterYear
             ? $lecturer->publications->where('year', $filterYear)
             : $lecturer->publications;
 
-        // ── Data chart performa: dua mode, mengikuti pola SINTA ──
-        // (skor "overall" sepanjang karier berdampingan dengan skor "3 tahun
-        // terakhir") — di sini disederhanakan jadi 2 pilihan: 5 Tahun Terakhir
-        // (default, fokus aktivitas terkini) dan Semua Tahun (akumulasi penuh,
-        // supaya rekam jejak dosen senior tidak terpotong oleh window tetap).
         $currentYear = (int) date('Y');
         $years5      = range($currentYear - 4, $currentYear);
 
-        // Tahun-tahun yang benar-benar punya data, dari ketiga kategori sekaligus
         $allActivityYears = collect()
             ->merge($lecturer->researches->pluck('year'))
             ->merge($lecturer->communityServices->pluck('year'))
@@ -85,7 +76,6 @@ class PublicController extends Controller
         $chart5    = $buildSeries($years5);
         $chartAll  = $buildSeries($yearsAll);
 
-        // Variabel lama tetap disediakan (dipakai bagian lain / kompatibilitas)
         $years        = $years5;
         $researchData = $chart5['research'];
         $serviceData  = $chart5['service'];

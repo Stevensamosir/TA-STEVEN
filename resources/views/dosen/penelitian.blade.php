@@ -20,6 +20,16 @@
                     <input type="number" name="year" required min="1990" max="{{ date('Y')+1 }}" placeholder="{{ date('Y') }}"
                         class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
                 </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Bulan *</label>
+                    <select name="month" required
+                        class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
+                        <option value="">— Pilih —</option>
+                        @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bulan)
+                            <option value="{{ $i+1 }}" {{ old('month') == $i+1 ? 'selected' : '' }}>{{ $bulan }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
             <div class="flex gap-4 items-end">
                 <div class="flex-1">
@@ -86,6 +96,13 @@
                                     </div>
                                     <input type="number" name="year" value="{{ $item->year }}"
                                            class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                                    <select name="month" required
+                                            class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                                        <option value="">— Bulan —</option>
+                                        @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bulan)
+                                            <option value="{{ $i+1 }}" {{ $item->month == $i+1 ? 'selected' : '' }}>{{ $bulan }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="flex gap-3">
                                     <input type="text" name="funding_source" value="{{ $item->funding_source }}"

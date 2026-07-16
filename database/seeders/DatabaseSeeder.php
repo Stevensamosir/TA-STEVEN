@@ -255,12 +255,21 @@ class DatabaseSeeder extends Seeder
             ['lecturer_id' => $lecFebrian->id,'title' => 'Desain Sistem Kendali Otomatis pada Perangkat Embedded',                            'year' => 2023, 'funding_source' => 'DIPA IT Del', 'visibility' => 'private', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        CommunityService::insert([
-            ['lecturer_id' => $lecOppir->id,  'title' => 'Pelatihan Pemrograman Web untuk Siswa SMK se-Kabupaten Toba',     'year' => 2023, 'location' => 'Toba, Sumatera Utara',   'visibility' => 'public', 'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecOppir->id,  'title' => 'Workshop Digitalisasi UMKM Berbasis Aplikasi Web',                 'year' => 2024, 'location' => 'Laguboti, Toba',         'visibility' => 'public', 'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecTegar->id,  'title' => 'Pendampingan Analisis Data untuk Pemda Kabupaten Toba',            'year' => 2024, 'location' => 'Balige, Toba',           'visibility' => 'public', 'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecFebrian->id,'title' => 'Instalasi dan Pelatihan Sistem Panel Surya untuk Desa Terpencil',  'year' => 2023, 'location' => 'Samosir, Sumatera Utara','visibility' => 'public', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        $pkmSeed = [
+            ['lecturer' => $lecOppir,   'title' => 'Pelatihan Pemrograman Web untuk Siswa SMK se-Kabupaten Toba',     'year' => 2023, 'location' => 'Toba, Sumatera Utara',    'visibility' => 'public'],
+            ['lecturer' => $lecOppir,   'title' => 'Workshop Digitalisasi UMKM Berbasis Aplikasi Web',                 'year' => 2024, 'location' => 'Laguboti, Toba',          'visibility' => 'public'],
+            ['lecturer' => $lecTegar,   'title' => 'Pendampingan Analisis Data untuk Pemda Kabupaten Toba',            'year' => 2024, 'location' => 'Balige, Toba',            'visibility' => 'public'],
+            ['lecturer' => $lecFebrian, 'title' => 'Instalasi dan Pelatihan Sistem Panel Surya untuk Desa Terpencil',  'year' => 2023, 'location' => 'Samosir, Sumatera Utara', 'visibility' => 'public'],
+        ];
+        foreach ($pkmSeed as $row) {
+            $cs = CommunityService::create([
+                'title'      => $row['title'],
+                'year'       => $row['year'],
+                'location'   => $row['location'],
+                'visibility' => $row['visibility'],
+            ]);
+            $cs->lecturers()->attach($row['lecturer']->id, ['role' => 'Ketua']);
+        }
 
         Publication::insert([
             ['lecturer_id' => $lecOppir->id,  'title' => 'Microservice Architecture for Higher Education Information Systems: A Case Study at Vocational Faculty',     'year' => 2023, 'publisher' => 'Journal of Information Systems Engineering and Business Intelligence', 'publisher_url' => 'https://e-journal.unair.ac.id/JISEBI',             'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],

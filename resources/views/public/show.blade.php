@@ -109,7 +109,13 @@
                         </div>
                     @endif
 
-                    @if($lecturer->user->email)
+                    @php
+                        // Email hasil fallback sync (dosen<angka>@del.ac.id) bukan email asli
+                        // dosen -- jangan tampilkan ke publik, cukup pesan netral.
+                        $isFallbackEmail = $lecturer->user->email
+                            && preg_match('/^dosen\d+@del\.ac\.id$/', $lecturer->user->email);
+                    @endphp
+                    @if($lecturer->user->email && !$isFallbackEmail)
                         <div class="mt-4 pt-4 border-t border-gray-100 text-left">
                             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Kontak</p>
                             <a href="mailto:{{ $lecturer->user->email }}"
@@ -121,26 +127,12 @@
                                 {{ $lecturer->user->email }}
                             </a>
                         </div>
+                    @else
+                        <div class="mt-4 pt-4 border-t border-gray-100 text-left">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Kontak</p>
+                            <p class="text-sm text-gray-400 italic">Email belum tersedia</p>
+                        </div>
                     @endif
-                </div>
-            </div>
-
-            <!-- Stat Cards -->
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 fade-up fade-up-d1">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Statistik</p>
-                <div class="grid grid-cols-2 gap-3">
-                    @foreach([
-                        ['Pendidikan',  $lecturer->educations->count(),        'bg-blue-600',   '📚'],
-                        ['Penelitian',  $lecturer->researches->count(),         'bg-indigo-600', '🔬'],
-                        ['Pengabdian',  $lecturer->communityServices->count(),  'bg-emerald-600','🤝'],
-                        ['Publikasi',   $lecturer->publications->count(),        'bg-violet-600', '📖'],
-                    ] as [$label, $count, $color, $icon])
-                    <div class="rounded-xl bg-gray-50 p-3 text-center hover:shadow-sm transition-all">
-                        <div class="text-xl mb-0.5">{{ $icon }}</div>
-                        <div class="text-2xl font-bold text-gray-800">{{ $count }}</div>
-                        <div class="text-xs text-gray-500 mt-0.5">{{ $label }}</div>
-                    </div>
-                    @endforeach
                 </div>
             </div>
 
@@ -229,10 +221,13 @@
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden fade-up fade-up-d2">
                 <div class="flex border-b border-gray-100 px-4 pt-4 gap-1 overflow-x-auto">
                     @foreach([
-                        ['pendidikan',  'Pendidikan',  $lecturer->educations->count()],
-                        ['penelitian',  'Penelitian',  $lecturer->researches->count()],
-                        ['pengabdian',  'Pengabdian',  $lecturer->communityServices->count()],
-                        ['publikasi',   'Publikasi',   $lecturer->publications->count()],
+                        ['pendidikan',   'Pendidikan',   $lecturer->educations->count()],
+                        ['penelitian',   'Penelitian',   $lecturer->researches->count()],
+                        ['pengabdian',   'Pengabdian',   $lecturer->communityServices->count()],
+                        ['publikasi',    'Publikasi',    $lecturer->publications->count()],
+                        ['buku',         'Buku',         $lecturer->books->count()],
+                        ['hki',          'HKI',          $lecturer->hkis->count()],
+                        ['penghargaan',  'Penghargaan',  $lecturer->awards->count()],
                     ] as [$key, $label, $count])
                     <button onclick="switchTab('{{ $key }}')" id="tab-btn-{{ $key }}"
                             class="tab-btn flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-t-lg text-gray-500 hover:text-del whitespace-nowrap">
@@ -316,7 +311,21 @@
                                         @if($item->location)
                                             <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">📍 {{ $item->location }}</span>
                                         @endif
+                                        @if($item->pkm_type)
+                                            <span class="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-medium">{{ $item->pkm_type }}</span>
+                                        @endif
                                     </div>
+                                    @if($item->lecturers->isNotEmpty())
+                                        <p class="text-xs text-gray-500 mt-1.5">
+                                            <span class="font-medium">Tim Dosen:</span>
+                                            {{ $item->lecturers->map(fn($l) => $l->user->name . ' (' . $l->pivot->role . ')')->join(', ') }}
+                                        </p>
+                                    @endif
+                                    @if($item->student_members)
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            <span class="font-medium">Anggota Mahasiswa:</span> {{ $item->student_members }}
+                                        </p>
+                                    @endif
                                 </div>
                             </div>
                             @endforeach
@@ -396,6 +405,104 @@
                         @endif
                     </div>
 
+                    <!-- TAB: BUKU -->
+                    <div id="tab-buku" class="tab-panel">
+                        @if($lecturer->books->isEmpty())
+                            <p class="text-sm text-gray-500 text-center py-8">Belum ada data buku.</p>
+                        @else
+                        <div class="space-y-3">
+                            @foreach($lecturer->books as $item)
+                            <div class="flex items-start gap-3 p-3 rounded-xl hover:bg-amber-50/50 transition-colors border border-transparent hover:border-amber-100">
+                                <div class="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-800 leading-snug">{{ $item->title }}</p>
+                                    <div class="flex flex-wrap gap-2 mt-1.5">
+                                        <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ $item->year }}</span>
+                                        @if($item->publisher)
+                                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ $item->publisher }}</span>
+                                        @endif
+                                        @if($item->isbn)
+                                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">ISBN: {{ $item->isbn }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
+                    </div>
+
+                    <!-- TAB: HKI -->
+                    <div id="tab-hki" class="tab-panel">
+                        @if($lecturer->hkis->isEmpty())
+                            <p class="text-sm text-gray-500 text-center py-8">Belum ada data HKI.</p>
+                        @else
+                        <div class="space-y-3">
+                            @foreach($lecturer->hkis as $item)
+                            <div class="flex items-start gap-3 p-3 rounded-xl hover:bg-rose-50/50 transition-colors border border-transparent hover:border-rose-100">
+                                <div class="w-9 h-9 rounded-lg bg-rose-100 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-800 leading-snug">{{ $item->title }}</p>
+                                    <div class="flex flex-wrap gap-2 mt-1.5">
+                                        <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ $item->year }}</span>
+                                        @if($item->type)
+                                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ $item->type }}</span>
+                                        @endif
+                                        @if($item->certificate_number)
+                                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">No. {{ $item->certificate_number }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
+                    </div>
+
+                    <!-- TAB: PENGHARGAAN -->
+                    <div id="tab-penghargaan" class="tab-panel">
+                        @if($lecturer->awards->isEmpty())
+                            <p class="text-sm text-gray-500 text-center py-8">Belum ada data penghargaan.</p>
+                        @else
+                        <div class="space-y-3">
+                            @foreach($lecturer->awards as $item)
+                            <div class="flex items-start gap-3 p-3 rounded-xl hover:bg-yellow-50/50 transition-colors border border-transparent hover:border-yellow-100">
+                                <div class="w-9 h-9 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    @if($item->evidence_url)
+                                        <a href="{{ $item->evidence_url }}" target="_blank" class="text-sm font-medium text-del hover:underline leading-snug block">{{ $item->name }}</a>
+                                    @else
+                                        <p class="text-sm font-medium text-gray-800 leading-snug">{{ $item->name }}</p>
+                                    @endif
+                                    <div class="flex flex-wrap gap-2 mt-1.5">
+                                        <span class="text-xs text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded font-medium">{{ $item->level }}</span>
+                                        <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ \Carbon\Carbon::parse($item->date)->format('d M Y') }}</span>
+                                        @if($item->organizer)
+                                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ $item->organizer }}</span>
+                                        @endif
+                                        @if($item->rank)
+                                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ $item->rank }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -414,12 +521,15 @@ function switchTab(key) {
     document.getElementById('tab-btn-' + key).classList.add('active');
 }
 // Aktifkan tab pertama yang ada data
-const tabs = ['pendidikan','penelitian','pengabdian','publikasi'];
+const tabs = ['pendidikan','penelitian','pengabdian','publikasi','buku','hki','penghargaan'];
 const counts = {
-    pendidikan: {{ $lecturer->educations->count() }},
-    penelitian: {{ $lecturer->researches->count() }},
-    pengabdian: {{ $lecturer->communityServices->count() }},
-    publikasi:  {{ $lecturer->publications->count() }},
+    pendidikan:  {{ $lecturer->educations->count() }},
+    penelitian:  {{ $lecturer->researches->count() }},
+    pengabdian:  {{ $lecturer->communityServices->count() }},
+    publikasi:   {{ $lecturer->publications->count() }},
+    buku:        {{ $lecturer->books->count() }},
+    hki:         {{ $lecturer->hkis->count() }},
+    penghargaan: {{ $lecturer->awards->count() }},
 };
 const urlTab = new URLSearchParams(window.location.search).get('tab');
 const firstWithData = urlTab || tabs.find(t => counts[t] > 0) || 'pendidikan';
