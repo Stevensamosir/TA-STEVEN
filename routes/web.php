@@ -8,7 +8,7 @@ use App\Http\Controllers\DoiController;
 use App\Http\Controllers\LPPMController;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PUBLIC — Tidak perlu login
+// PUBLIC - Tidak perlu login
 // ─────────────────────────────────────────────────────────────────────────────
 Route::get('/',           [PublicController::class, 'index'])->name('home');
 Route::get('/dosen',      [PublicController::class, 'index'])->name('public.dosen');
@@ -24,7 +24,7 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DOSEN DASHBOARD — semua role yang login (dosen, kaprodi, dekan)
+// DOSEN DASHBOARD - semua role yang login (dosen, kaprodi, dekan)
 // Setiap user mengelola profil dan tridharma MILIKNYA SENDIRI
 // ─────────────────────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:dosen,kaprodi,dekan'])->prefix('dashboard')->name('dosen.')->group(function () {
@@ -89,7 +89,7 @@ Route::middleware(['auth', 'role:dosen,kaprodi,dekan'])->prefix('dashboard')->na
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ADMIN — DEKAN ONLY
+// ADMIN - DEKAN ONLY
 // Semua route di sini dilindungi route middleware role:dekan
 // + assertDekanOnly() di dalam controller sebagai defense-in-depth
 // ─────────────────────────────────────────────────────────────────────────────
@@ -98,13 +98,13 @@ Route::middleware(['auth', 'role:dekan'])->prefix('admin')->name('admin.')->grou
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DATA INTERNAL & EDIT PROFIL DOSEN — Dekan + Kaprodi
+// DATA INTERNAL & EDIT PROFIL DOSEN - Dekan + Kaprodi
 // FIX (perbaikan menyeluruh): route /profil/{id} SEBELUMNYA ada di dalam grup
 // role:dekan saja, sehingga Kaprodi diblokir middleware sebelum sempat dicek
 // assertKaprodiCanEdit() di controller. Sempat dibuat route duplikat khusus
 // Kaprodi (admin.kaprodi.profil.*), tapi karena pola URL-nya identik dengan
 // punya Dekan, route itu tidak pernah benar-benar tercapai (Laravel selalu
-// mencocokkan ke route pertama yang match, yaitu milik Dekan) — duplikat itu
+// mencocokkan ke route pertama yang match, yaitu milik Dekan) - duplikat itu
 // dihapus. Sekarang HANYA SATU route bernama admin.profil.edit/update yang
 // terbuka untuk Dekan & Kaprodi; pembatasan rinci (Kaprodi hanya boleh edit
 // dosen di prodinya sendiri) tetap dijaga oleh assertKaprodiCanEdit() di
@@ -121,12 +121,12 @@ Route::middleware(['auth', 'role:dekan,kaprodi'])->prefix('admin')->name('admin.
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DOI LOOKUP — Public API (Crossref adalah public API, tidak perlu login)
+// DOI LOOKUP - Public API (Crossref adalah public API, tidak perlu login)
 // ─────────────────────────────────────────────────────────────────────────────
 Route::get('/api/doi', [DoiController::class, 'fetch'])->name('api.doi');
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LPPM — input Penelitian & PKM dosen
+// LPPM - input Penelitian & PKM dosen
 // ─────────────────────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:lppm'])->prefix('lppm')->name('lppm.')->group(function () {
     Route::get('/',              [LPPMController::class, 'index'])->name('index');

@@ -22,7 +22,7 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1">Bulan *</label>
                     <select name="month" required
                             class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
-                        <option value="">— Pilih —</option>
+                        <option value=""> - Pilih - </option>
                         @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bulan)
                             <option value="{{ $i+1 }}" {{ old('month') == $i+1 ? 'selected' : '' }}>{{ $bulan }}</option>
                         @endforeach
@@ -38,7 +38,7 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Jenis PKM</label>
                     <select name="pkm_type" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
-                        <option value="">— Pilih —</option>
+                        <option value=""> - Pilih - </option>
                         <option value="Internal">Internal</option>
                         <option value="Nasional">Nasional</option>
                         <option value="Internasional">Internasional</option>
@@ -47,7 +47,7 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Skema PKM (opsional)</label>
                     <select name="pkm_scheme" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
-                        <option value="">— Tidak masuk skema kompetisi —</option>
+                        <option value=""> - Tidak masuk skema kompetisi - </option>
                         <optgroup label="Skema Pendanaan">
                             <option value="PKM-RE">PKM-RE (Riset Eksakta)</option>
                             <option value="PKM-RSH">PKM-RSH (Riset Sosial Humaniora)</option>
@@ -146,7 +146,7 @@
                                        class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
                                 <select name="month" required
                                         class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
-                                    <option value="">— Bulan —</option>
+                                    <option value=""> - Bulan - </option>
                                     @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bulan)
                                         <option value="{{ $i+1 }}" {{ $item->month == $i+1 ? 'selected' : '' }}>{{ $bulan }}</option>
                                     @endforeach
@@ -156,13 +156,13 @@
                                 <input type="text" name="location" value="{{ $item->location }}" placeholder="Lokasi"
                                        class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
                                 <select name="pkm_type" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
-                                    <option value="">— Jenis —</option>
+                                    <option value=""> - Jenis - </option>
                                     <option value="Internal" @selected($item->pkm_type === 'Internal')>Internal</option>
                                     <option value="Nasional" @selected($item->pkm_type === 'Nasional')>Nasional</option>
                                     <option value="Internasional" @selected($item->pkm_type === 'Internasional')>Internasional</option>
                                 </select>
                                 <select name="pkm_scheme" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
-                                    <option value="">— Tidak masuk skema kompetisi —</option>
+                                    <option value=""> - Tidak masuk skema kompetisi - </option>
                                     <optgroup label="Skema Pendanaan">
                                         <option value="PKM-RE" @selected($item->pkm_scheme === 'PKM-RE')>PKM-RE (Riset Eksakta)</option>
                                         <option value="PKM-RSH" @selected($item->pkm_scheme === 'PKM-RSH')>PKM-RSH (Riset Sosial Humaniora)</option>

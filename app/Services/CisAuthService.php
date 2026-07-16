@@ -175,7 +175,7 @@ class CisAuthService
                 continue; // data CIS rusak/kosong
             }
 
-            if (!$this->isDosenActive($token, $pegawaiId)) {
+            if (config('cis.auto_deactivate_enabled') && !$this->isDosenActive($token, $pegawaiId)) {
                 $inactive++;
                 $existingLecturer = \App\Models\Lecturer::where('cis_pegawai_id', $pegawaiId)->first();
                 if ($existingLecturer) {

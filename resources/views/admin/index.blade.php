@@ -51,12 +51,12 @@ $adminAllZero = max(array_merge($adminChart5['penelitian'], $adminChart5['pengab
 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-8">
     <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
         <div>
-            <h2 class="text-sm font-semibold text-gray-800">Aktivitas Tridharma — Seluruh Fakultas Vokasi</h2>
+            <h2 class="text-sm font-semibold text-gray-800">Aktivitas Tridharma Seluruh Fakultas Vokasi</h2>
             <p class="text-xs text-gray-400 mt-0.5" id="adminChartRangeLabel">5 tahun terakhir</p>
         </div>
         @if(!$adminAllZero)
         <div class="flex items-center gap-2 flex-wrap">
-            {{-- Legend (klikable — toggle dataset) --}}
+            {{-- Legend (klikable - toggle dataset) --}}
             <div class="flex gap-1 text-xs text-gray-500 mr-2" id="admin-legend">
                 @foreach([[0,'bg-blue-500','Penelitian'],[1,'bg-emerald-500','Pengabdian'],[2,'bg-violet-500','Publikasi']] as [$idx,$bg,$lbl])
                 <button type="button" onclick="toggleAdminDataset({{ $idx }})" id="admin-legend-{{ $idx }}"

@@ -24,7 +24,7 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1">Bulan *</label>
                     <select name="month" required
                         class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
-                        <option value="">— Pilih —</option>
+                        <option value=""> - Pilih - </option>
                         @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bulan)
                             <option value="{{ $i+1 }}" {{ old('month') == $i+1 ? 'selected' : '' }}>{{ $bulan }}</option>
                         @endforeach
@@ -98,7 +98,7 @@
                                            class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
                                     <select name="month" required
                                             class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
-                                        <option value="">— Bulan —</option>
+                                        <option value=""> - Bulan - </option>
                                         @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bulan)
                                             <option value="{{ $i+1 }}" {{ $item->month == $i+1 ? 'selected' : '' }}>{{ $bulan }}</option>
                                         @endforeach

@@ -81,14 +81,14 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
                         Link Sumber (URL / DOI)
-                        <span class="text-gray-400 font-normal">— otomatis dari DOI</span>
+                        <span class="text-gray-400 font-normal"> - otomatis dari DOI</span>
                     </label>
                     <input type="url" name="publisher_url" id="field-url"
                         placeholder="https://doi.org/..."
                         class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Penulis <span class="text-gray-400 font-normal">— otomatis dari DOI</span></label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Penulis <span class="text-gray-400 font-normal"> - otomatis dari DOI</span></label>
                     <input type="text" name="authors" id="field-authors"
                         placeholder="Nama Penulis 1, Nama Penulis 2, ..."
                         class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
@@ -142,7 +142,7 @@
                             @if($authors->isNotEmpty())
                                 <p class="line-clamp-2">{{ $authors->join(', ') }}{{ str_contains($item->authors ?? '', ',') && count(explode(',', $item->authors)) > 3 ? ', ...' : '' }}</p>
                             @else
-                                <span class="text-gray-300">—</span>
+                                <span class="text-gray-300"> - </span>
                             @endif
                         </td>
                         <td class="px-5 py-3">
@@ -262,7 +262,7 @@ async function fetchFromCrossrefDirect(doi) {
         const json = await res.json();
         return parseCrossrefMessage(json.message || {}, doi);
     } catch (e) {
-        return null; // kemungkinan diblokir CORS/jaringan browser — lanjut ke fallback
+        return null; // kemungkinan diblokir CORS/jaringan browser - lanjut ke fallback
     }
 }
 

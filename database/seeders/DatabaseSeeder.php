@@ -17,14 +17,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // ============================================================
-        // 1. PROGRAM STUDI — 3 prodi aktual Fakultas Vokasi IT Del
+        // 1. PROGRAM STUDI - 3 prodi aktual Fakultas Vokasi IT Del
         // ============================================================
         $trpl = StudyProgram::create(['name' => 'D4 Teknologi Rekayasa Perangkat Lunak']);
         $ti   = StudyProgram::create(['name' => 'D3 Teknologi Informasi']);
         $tk   = StudyProgram::create(['name' => 'D3 Teknik Komputer']);
 
         // ============================================================
-        // 2. USERS — Dekan, 3 Kaprodi, dan beberapa dosen representatif
+        // 2. USERS - Dekan, 3 Kaprodi, dan beberapa dosen representatif
         // Menggunakan nama dan email aktual Fakultas Vokasi IT Del
         // ============================================================
 
@@ -123,7 +123,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ============================================================
-        // 3. LECTURERS — profil dosen
+        // 3. LECTURERS - profil dosen
         // Dekan (Bu Riyanthi) → TRPL (karena beliau dari DIVTRPL)
         // ============================================================
         $lecDekan = Lecturer::create([
@@ -233,7 +233,7 @@ class DatabaseSeeder extends Seeder
         // Kaprodi D3 TK belum ditentukan, biarkan null dulu
 
         // ============================================================
-        // 5. DATA TRIDHARMA — contoh data untuk demo/UAT
+        // 5. DATA TRIDHARMA - contoh data untuk demo/UAT
         // Oppir (dosen biasa) dipakai sebagai contoh terlengkap
         // ============================================================
         Education::insert([

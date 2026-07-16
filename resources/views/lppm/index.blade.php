@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard LPPM — Sistem Informasi Profil Dosen</title>
+    <title>Dashboard LPPM Sistem Informasi Profil Dosen</title>
     <link rel="icon" type="image/png" href="/images/logo-del.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,7 +14,7 @@
 <nav class="bg-del text-white px-6 py-4 flex items-center justify-between">
     <div class="flex items-center gap-3">
         <img src="/images/logo-del.png" alt="IT Del" class="h-9" onerror="this.style.display='none'">
-        <span class="font-semibold">SIPD — Dashboard LPPM</span>
+        <span class="font-semibold">SIPD - Dashboard LPPM</span>
     </div>
     <form action="{{ route('logout') }}" method="POST">
         @csrf
@@ -22,7 +22,7 @@
     </form>
 </nav>
 
-<main class="max-w-3xl mx-auto px-4 py-8 space-y-6">
+<main class="max-w-6xl mx-auto px-4 py-8 space-y-6">
 
     @if(session('success'))
         <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
@@ -58,6 +58,8 @@
         </div>
     </section>
 
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+
     <!-- Form Penelitian (nonaktif sampai dosen dipilih) -->
     <section class="bg-white rounded-2xl shadow p-6" id="formPenelitianSection">
         <h2 class="font-semibold text-gray-800 mb-4">Input Data Penelitian Dosen</h2>
@@ -79,7 +81,7 @@
                     <label class="text-sm font-medium text-gray-700 block mb-1.5">Bulan</label>
                     <select name="month" required
                             class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
-                        <option value="">— Pilih —</option>
+                        <option value=""> - Pilih - </option>
                         @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bulan)
                             <option value="{{ $i+1 }}" {{ old('month') == $i+1 ? 'selected' : '' }}>{{ $bulan }}</option>
                         @endforeach
@@ -128,7 +130,7 @@
                     <label class="text-sm font-medium text-gray-700 block mb-1.5">Bulan</label>
                     <select name="month" required
                             class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
-                        <option value="">— Pilih —</option>
+                        <option value=""> - Pilih - </option>
                         @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $bulan)
                             <option value="{{ $i+1 }}" {{ old('month') == $i+1 ? 'selected' : '' }}>{{ $bulan }}</option>
                         @endforeach
@@ -145,7 +147,7 @@
                     <label class="text-sm font-medium text-gray-700 block mb-1.5">Jenis PKM</label>
                     <select name="pkm_type"
                             class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
-                        <option value="">— Pilih —</option>
+                        <option value=""> - Pilih - </option>
                         <option value="Internal">Internal</option>
                         <option value="Nasional">Nasional</option>
                         <option value="Internasional">Internasional</option>
@@ -155,7 +157,7 @@
                     <label class="text-sm font-medium text-gray-700 block mb-1.5">Skema PKM (opsional)</label>
                     <select name="pkm_scheme"
                             class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
-                        <option value="">— Tidak masuk skema kompetisi —</option>
+                        <option value=""> - Tidak masuk skema kompetisi - </option>
                         <optgroup label="Skema Pendanaan">
                             <option value="PKM-RE">PKM-RE (Riset Eksakta)</option>
                             <option value="PKM-RSH">PKM-RSH (Riset Sosial Humaniora)</option>
@@ -201,6 +203,8 @@
             <p class="text-xs text-gray-400" id="hintPkm">Pilih dosen dulu di atas sebelum mengisi form ini.</p>
         </form>
     </section>
+
+    </div>
 
     <!-- Riwayat Pengisian Terakhir -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">

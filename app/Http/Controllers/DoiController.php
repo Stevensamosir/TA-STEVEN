@@ -19,22 +19,22 @@ class DoiController extends Controller
         // redirect ke halaman publikasi dengan pesan error yang ramah.
         if (!$request->wantsJson() && !$request->ajax()) {
             return redirect()->route('dosen.publikasi')
-                ->with('error', 'Gunakan fitur Cari DOI di halaman Publikasi.');
+ ->with('error', 'Gunakan fitur Cari DOI di halaman Publikasi.');
         }
 
         if (empty($doi)) {
             return response()->json(['error' => 'DOI tidak boleh kosong.'], 422);
         }
 
-        // Bersihkan input DOI — bisa berupa URL atau DOI langsung
+        // Bersihkan input DOI - bisa berupa URL atau DOI langsung
         $doi = $this->cleanDoi($doi);
 
         try {
             $response = Http::timeout(10)
-                ->withHeaders([
+ ->withHeaders([
                     'User-Agent' => 'SistemProfilDosenVokasi/1.0 (mailto:admin@del.ac.id)',
                 ])
-                ->get("https://api.crossref.org/works/{$doi}");
+ ->get("https://api.crossref.org/works/{$doi}");
 
             if ($response->failed()) {
                 return response()->json([

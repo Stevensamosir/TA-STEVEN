@@ -48,4 +48,10 @@ return [
     */
     'dekan_pegawai_ids' => array_filter(explode(',', env('CIS_DEKAN_PEGAWAI_IDS', ''))),
 
+    // Sementara dimatikan (lihat FIX_MATIKAN_AUTO_DEACTIVATE.md) -- data status aktif
+    // di CIS dev tidak reliable, sempat salah nonaktifkan dosen yang beneran aktif
+    // (Oppir, Dekan). Set CIS_AUTO_DEACTIVATE=true di .env kalau sudah dikonfirmasi
+    // data produksi CIS reliable.
+    'auto_deactivate_enabled' => env('CIS_AUTO_DEACTIVATE', false),
+
 ];

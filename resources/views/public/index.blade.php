@@ -69,7 +69,7 @@
             <a href="{{ route('public.dosen.show', $lecturer->id) }}"
                class="bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:border-del/30 transition-all duration-200 overflow-hidden group">
 
-                <!-- Photo — FIX: object-position agar wajah tidak terpotong -->
+                <!-- Photo - FIX: object-position agar wajah tidak terpotong -->
                 <div class="h-48 bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden">
                     @if($lecturer->photo)
                         <img src="{{ Storage::url($lecturer->photo) }}"

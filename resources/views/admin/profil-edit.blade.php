@@ -60,7 +60,7 @@
                 </label>
                 <select name="jabatan_fungsional"
                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del bg-white">
-                    <option value="">— Pilih Jabatan Fungsional —</option>
+                    <option value=""> - Pilih Jabatan Fungsional - </option>
                     @foreach(App\Models\Lecturer::jabatanFungsionalOptions() as $jf)
                         <option value="{{ $jf }}"
                             {{ old('jabatan_fungsional', $lecturer->jabatan_fungsional) === $jf ? 'selected' : '' }}>

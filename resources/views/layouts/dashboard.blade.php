@@ -196,7 +196,7 @@
     <div class="flex-1 overflow-y-auto min-w-0">
         <header class="bg-white border-b border-gray-100 px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-10 gap-3">
             <div class="flex items-center gap-3 min-w-0">
-                {{-- Tombol hamburger — hanya tampil di mobile/tablet kecil --}}
+                {{-- Tombol hamburger - hanya tampil di mobile/tablet kecil --}}
                 <button type="button" onclick="toggleSidebar()" aria-label="Buka menu navigasi"
                         class="md:hidden p-1.5 -ml-1.5 text-gray-600 hover:bg-gray-100 rounded-lg flex-shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -250,7 +250,7 @@
 
 @stack('scripts')
 <script>
-    // Toggle tampil/sembunyi password — dipakai semua form password di halaman dashboard
+    // Toggle tampil/sembunyi password - dipakai semua form password di halaman dashboard
     function togglePasswordVisibility(inputId, btn) {
         const input = document.getElementById(inputId);
         if (!input) return;

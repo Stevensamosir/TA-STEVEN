@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk — Sistem Profil Dosen Vokasi IT Del</title>
+    <title>Masuk ke Sistem Profil Dosen Vokasi IT Del</title>
     <link rel="icon" type="image/png" href="/images/logo-del.png">
     <link rel="shortcut icon" href="/images/logo-del.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config={theme:{extend:{colors:{del:{DEFAULT:'#003087',light:'#0051c3',dark:'#001f5c',50:'#eff6ff'}}}}}</script>
     <style>
-        /* Cegah kursor "ngetik" (I-beam) muncul di teks biasa — hanya kotak input asli yang boleh */
+        /* Cegah kursor "ngetik" (I-beam) muncul di teks biasa - hanya kotak input asli yang boleh */
         body, p, h1, h2, h3, h4, h5, h6, span, div, li, label {
             cursor: default;
         }
@@ -30,7 +30,7 @@
         <div class="bg-del px-8 pt-8 pb-6 text-center">
             <img src="/images/logo-del.png" alt="IT Del" class="h-16 mx-auto mb-3" onerror="this.style.display='none'">
             <h1 class="text-white font-bold text-xl">Sistem Informasi Profil Dosen</h1>
-            <p class="text-blue-200 text-sm mt-1">Fakultas Vokasi — Institut Teknologi Del</p>
+            <p class="text-blue-200 text-sm mt-1">Fakultas Vokasi - Institut Teknologi Del</p>
         </div>
         <!-- Form -->
         <div class="px-8 py-6">

@@ -12,7 +12,7 @@
     </style>
 </head>
 <body>
-    <h1>Laporan Tridharma — Fakultas Vokasi IT Del</h1>
+    <h1>Laporan Tridharma Fakultas Vokasi IT Del</h1>
     <p>Periode: {{ $isAllTime ? 'Semua' : ucfirst(str_replace('_',' ',$periode)) }} &middot; Dicetak: {{ now()->format('d M Y H:i') }}</p>
 
     <h2>Penelitian ({{ $penelitian->count() }} data)</h2>

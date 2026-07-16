@@ -139,6 +139,7 @@ class AdminController extends Controller
         });
 
         $lecturers    = $query->whereHas('user', fn($u) => $u->where('is_active', true))
+                               ->where('user_id', '!=', auth()->id())
                                ->orderBy('study_program_id')->get();
         $studyPrograms = StudyProgram::orderBy('name')->get();
 

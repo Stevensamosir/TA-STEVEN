@@ -155,20 +155,20 @@ class DosenController extends Controller
         ]);
         Education::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
             ->update($request->only(['degree','institution','year','visibility']));
-        return back()->with('success', 'Data pendidikan diperbarui.');
+        return back()->with('success', 'Data pendidikan berhasil diperbarui.');
     }
 
     public function destroyPendidikan($id)
     {
         Education::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Data pendidikan dihapus.');
+        return back()->with('success', 'Data pendidikan berhasil dihapus.');
     }
 
     public function togglePendidikanVisibility($id)
     {
         $edu = Education::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
         $edu->update(['visibility' => $edu->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas diperbarui.');
+        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── PENELITIAN ──────────────────────────────────────────
@@ -190,7 +190,7 @@ class DosenController extends Controller
             'visibility'     => 'required|in:public,private',
         ]);
         $this->getLecturer()->researches()->create($request->only(['title','year','month','funding_source','visibility']));
-        return back()->with('success', 'Data penelitian ditambahkan.');
+        return back()->with('success', 'Data penelitian berhasil ditambahkan.');
     }
 
     public function updatePenelitian(Request $request, $id)
@@ -204,20 +204,20 @@ class DosenController extends Controller
         ]);
         Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
             ->update($request->only(['title','year','month','funding_source','visibility']));
-        return back()->with('success', 'Data penelitian diperbarui.');
+        return back()->with('success', 'Data penelitian berhasil diperbarui.');
     }
 
     public function destroyPenelitian($id)
     {
         Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Data penelitian dihapus.');
+        return back()->with('success', 'Data penelitian berhasil dihapus.');
     }
 
     public function togglePenelitianVisibility($id)
     {
         $r = Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
         $r->update(['visibility' => $r->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas diperbarui.');
+        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── PENGABDIAN ──────────────────────────────────────────
@@ -244,7 +244,7 @@ class DosenController extends Controller
             $request->only(['title','year','month','location','pkm_type','pkm_scheme','student_members','visibility']),
             ['role' => 'Ketua']
         );
-        return back()->with('success', 'Data pengabdian ditambahkan.');
+        return back()->with('success', 'Data pengabdian berhasil ditambahkan.');
     }
 
     public function updatePengabdian(Request $request, $id)
@@ -261,7 +261,7 @@ class DosenController extends Controller
         ]);
         $item = $this->getLecturer()->communityServices()->where('community_services.id', $id)->firstOrFail();
         $item->update($request->only(['title','year','month','location','pkm_type','pkm_scheme','student_members','visibility']));
-        return back()->with('success', 'Data pengabdian diperbarui.');
+        return back()->with('success', 'Data pengabdian berhasil diperbarui.');
     }
 
     public function destroyPengabdian($id)
@@ -275,14 +275,14 @@ class DosenController extends Controller
             $item->delete();
         }
 
-        return back()->with('success', 'Data pengabdian dihapus.');
+        return back()->with('success', 'Data pengabdian berhasil dihapus.');
     }
 
     public function togglePengabdianVisibility($id)
     {
         $item = $this->getLecturer()->communityServices()->where('community_services.id', $id)->firstOrFail();
         $item->update(['visibility' => $item->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas diperbarui.');
+        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── PUBLIKASI ───────────────────────────────────────────
@@ -304,7 +304,7 @@ class DosenController extends Controller
             'visibility'    => 'required|in:public,private',
         ]);
         $this->getLecturer()->publications()->create($request->only(['title','publisher','publisher_url','year','visibility','authors']));
-        return back()->with('success', 'Data publikasi ditambahkan.');
+        return back()->with('success', 'Data publikasi berhasil ditambahkan.');
     }
 
     public function updatePublikasi(Request $request, $id)
@@ -318,20 +318,20 @@ class DosenController extends Controller
         ]);
         Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
             ->update($request->only(['title','publisher','publisher_url','year','visibility','authors']));
-        return back()->with('success', 'Data publikasi diperbarui.');
+        return back()->with('success', 'Data publikasi berhasil diperbarui.');
     }
 
     public function destroyPublikasi($id)
     {
         Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Data publikasi dihapus.');
+        return back()->with('success', 'Data publikasi berhasil dihapus.');
     }
 
     public function togglePublikasiVisibility($id)
     {
         $p = Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
         $p->update(['visibility' => $p->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas diperbarui.');
+        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── BUKU ──────────────────────────────────────────
@@ -366,20 +366,20 @@ class DosenController extends Controller
         ]);
         Book::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
             ->update($request->only(['title','year','publisher','isbn','visibility']));
-        return back()->with('success', 'Data buku diperbarui.');
+        return back()->with('success', 'Data buku berhasil diperbarui.');
     }
 
     public function destroyBuku($id)
     {
         Book::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Data buku dihapus.');
+        return back()->with('success', 'Data buku berhasil dihapus.');
     }
 
     public function toggleBukuVisibility($id)
     {
         $b = Book::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
         $b->update(['visibility' => $b->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas diperbarui.');
+        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── HKI ───────────────────────────────────────────
@@ -414,20 +414,20 @@ class DosenController extends Controller
         ]);
         Hki::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
             ->update($request->only(['title','year','type','certificate_number','visibility']));
-        return back()->with('success', 'Data HKI diperbarui.');
+        return back()->with('success', 'Data HKI berhasil diperbarui.');
     }
 
     public function destroyHki($id)
     {
         Hki::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Data HKI dihapus.');
+        return back()->with('success', 'Data HKI berhasil dihapus.');
     }
 
     public function toggleHkiVisibility($id)
     {
         $h = Hki::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
         $h->update(['visibility' => $h->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas diperbarui.');
+        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── PENGHARGAAN ───────────────────────────────────
@@ -466,20 +466,20 @@ class DosenController extends Controller
         ]);
         Award::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
             ->update($request->only(['name','level','organizer','rank','date','evidence_url','visibility']));
-        return back()->with('success', 'Data penghargaan diperbarui.');
+        return back()->with('success', 'Data penghargaan berhasil diperbarui.');
     }
 
     public function destroyPenghargaan($id)
     {
         Award::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Data penghargaan dihapus.');
+        return back()->with('success', 'Data penghargaan berhasil dihapus.');
     }
 
     public function togglePenghargaanVisibility($id)
     {
         $a = Award::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
         $a->update(['visibility' => $a->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas diperbarui.');
+        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── JADWAL DOSEN (kalender ketersediaan pribadi, BUKAN jadwal CIS) ───
@@ -517,13 +517,13 @@ class DosenController extends Controller
         ]);
         Schedule::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
             ->update($request->only(['day','start_time','end_time','description','status']));
-        return back()->with('success', 'Jadwal diperbarui.');
+        return back()->with('success', 'Jadwal berhasil diperbarui.');
     }
 
     public function destroyJadwal($id)
     {
         Schedule::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Jadwal dihapus.');
+        return back()->with('success', 'Jadwal berhasil dihapus.');
     }
 
     // ─── PASSWORD ────────────────────────────────────────────

@@ -79,7 +79,7 @@
                     <p class="text-xs text-gray-400 mt-0.5" id="dashChartRangeLabel">5 tahun terakhir</p>
                 </div>
                 <div class="flex items-center gap-3 flex-wrap">
-                    <!-- Legend (klikable — klik untuk sembunyikan/tampilkan data) -->
+                    <!-- Legend (klikable - klik untuk sembunyikan/tampilkan data) -->
                     <div class="flex gap-1" id="dash-legend">
                         @foreach([[0,'bg-indigo-500','Penelitian'],[1,'bg-emerald-500','Pengabdian'],[2,'bg-violet-500','Publikasi']] as [$idx,$bg,$lbl])
                         <button type="button" onclick="toggleDashDataset({{ $idx }})" id="dash-legend-{{ $idx }}"

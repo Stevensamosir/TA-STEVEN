@@ -15,7 +15,7 @@
     .stat-ring {
         background: conic-gradient(#003087 var(--pct), #e5e7eb 0%);
     }
-    /* Hide scrollbar but allow scroll — untuk sticky sidebar */
+    /* Hide scrollbar but allow scroll - untuk sticky sidebar */
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -57,7 +57,7 @@
             {{-- ✅ FIX: hapus overflow-hidden dari wrapper agar avatar tidak terpotong --}}
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm fade-up">
 
-                <!-- Cover gradient — overflow-hidden hanya di sini agar rounded-t tetap bersih -->
+                <!-- Cover gradient - overflow-hidden hanya di sini agar rounded-t tetap bersih -->
                 <div class="h-24 bg-gradient-to-br from-del to-blue-600 relative rounded-t-2xl overflow-hidden">
                     <!-- Pola dot dekoratif -->
                     <div class="absolute inset-0 opacity-10"
@@ -68,7 +68,7 @@
                     <div class="absolute -right-2 -bottom-8 w-20 h-20 bg-white/5 rounded-full"></div>
                 </div>
 
-                <!-- Avatar — z-10 agar selalu di atas cover, relative agar keluar dari flow -->
+                <!-- Avatar - z-10 agar selalu di atas cover, relative agar keluar dari flow -->
                 <div class="flex justify-center -mt-12 mb-4 relative z-10">
                     @if($lecturer->photo)
                         <img src="{{ Storage::url($lecturer->photo) }}"
@@ -150,7 +150,7 @@
                         <p class="text-xs text-gray-400 mt-0.5" id="chartRangeLabel">5 tahun terakhir</p>
                     </div>
                     <div class="flex items-center gap-4 flex-wrap justify-end">
-                        {{-- Legend (klikable — klik untuk sembunyikan/tampilkan) --}}
+                        {{-- Legend (klikable - klik untuk sembunyikan/tampilkan) --}}
                         <div class="flex gap-1 text-xs text-gray-500 select-none" id="pub-legend">
                             @foreach([[0,'bg-blue-500','Penelitian'],[1,'bg-emerald-500','Pengabdian'],[2,'bg-violet-500','Publikasi']] as [$idx,$bg,$lbl])
                             <button type="button" onclick="togglePubDataset({{ $idx }})" id="pub-legend-{{ $idx }}"
