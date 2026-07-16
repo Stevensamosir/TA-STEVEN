@@ -487,7 +487,10 @@ class DosenController extends Controller
     {
         $lecturer = $this->getLecturer();
         $jadwals  = $lecturer->schedules()
-            ->orderByRaw("FIELD(day,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu')")
+            ->orderByRaw("CASE day
+                WHEN 'Senin' THEN 1 WHEN 'Selasa' THEN 2 WHEN 'Rabu' THEN 3
+                WHEN 'Kamis' THEN 4 WHEN 'Jumat' THEN 5 WHEN 'Sabtu' THEN 6
+                WHEN 'Minggu' THEN 7 END")
             ->orderBy('start_time')
             ->get();
         return view('dosen.jadwal', compact('lecturer', 'jadwals'));
