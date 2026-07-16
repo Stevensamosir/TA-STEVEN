@@ -8,6 +8,11 @@ use App\Http\Controllers\DoiController;
 use App\Http\Controllers\LPPMController;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// HEALTH CHECK - Endpoint ringan untuk health check platform (Render, dll)
+// ─────────────────────────────────────────────────────────────────────────────
+Route::get('/healthz', fn () => response()->json(['status' => 'ok']));
+
+// ─────────────────────────────────────────────────────────────────────────────
 // PUBLIC - Tidak perlu login
 // ─────────────────────────────────────────────────────────────────────────────
 Route::get('/',           [PublicController::class, 'index'])->name('home');
