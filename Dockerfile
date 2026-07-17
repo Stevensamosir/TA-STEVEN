@@ -1,22 +1,24 @@
-FROM richarvey/nginx-php-fpm:3.1.6
+FROM php:8.3-fpm-alpine
 
+RUN apk add --no-cache nginx supervisor bash icu-dev libzip-dev postgresql-dev oniguruma-dev libpng-dev libjpeg-turbo-dev freetype-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring zip intl bcmath gd opcache
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
 COPY . .
 
-# Install dependency PHP saat BUILD image (bukan runtime) supaya vendor/autoload.php
-# sudah tersedia & startup lebih cepat. --no-scripts karena artisan belum bisa jalan
-# sebelum .env siap saat build; package discovery dipicu ulang di deploy script.
 RUN composer install --no-dev --working-dir=/var/www/html --no-interaction --optimize-autoloader --no-scripts
 
-ENV SKIP_COMPOSER=1
-ENV WEBROOT=/var/www/html/public
-ENV PHP_ERRORS_STDERR=1
-ENV RUN_SCRIPTS=1
-ENV REAL_IP_HEADER=1
+RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-ENV APP_ENV=production
-ENV APP_DEBUG=false
-ENV LOG_CHANNEL=stderr
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/supervisord.conf /etc/supervisord.conf
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-ENV COMPOSER_ALLOW_SUPERUSER=1
+EXPOSE 80
 
-CMD ["/start.sh"]
+CMD ["/entrypoint.sh"]
