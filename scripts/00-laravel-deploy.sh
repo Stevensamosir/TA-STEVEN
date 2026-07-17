@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
-echo "=== Cek composer ==="
-if ! command -v composer &> /dev/null; then
-    echo "composer tidak ditemukan, install manual..."
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-fi
-composer --version
+# Catatan: composer install TIDAK lagi di sini -- sudah dijalankan saat BUILD
+# image (lihat Dockerfile). Di sini tinggal langkah yang butuh runtime/.env.
 
-echo "=== Running composer install ==="
-composer install --no-dev --working-dir=/var/www/html --no-interaction --optimize-autoloader
+echo "=== Package discovery ==="
+# Memicu ulang discovery package Laravel yang di-skip saat build (--no-scripts).
+php /var/www/html/artisan package:discover --ansi
 
 echo "=== Caching config ==="
 php /var/www/html/artisan config:cache
