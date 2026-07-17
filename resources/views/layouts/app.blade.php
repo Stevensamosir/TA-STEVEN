@@ -71,14 +71,14 @@
             <div class="flex items-center gap-3">
                 @auth
                     @if(auth()->user()->isDekan())
-                        {{-- Dekan → admin dashboard utama --}}
+                        {{-- Dekan → dashboard dekan utama --}}
                         <a href="{{ route('admin.index') }}" class="text-sm font-medium text-del hover:underline hidden sm:block">
-                            Dashboard Admin
+                            Dashboard Dekan
                         </a>
                     @elseif(auth()->user()->isKaprodi())
                         {{-- Kaprodi → halaman Data Internal (route yg memang boleh diakses Kaprodi) --}}
                         <a href="{{ route('admin.internal') }}" class="text-sm font-medium text-del hover:underline hidden sm:block">
-                            Dashboard Admin
+                            Data Internal
                         </a>
                     @else
                         {{-- Dosen biasa → dashboard dosen --}}

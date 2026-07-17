@@ -94,10 +94,10 @@
         <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
             {{-- ===== MENU DEKAN: akses penuh semua fitur admin ===== --}}
             @if(auth()->user()->isDekan())
-            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 pt-2 pb-1">Admin</div>
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 pt-2 pb-1">Dekan</div>
             <a href="{{ route('admin.index') }}" class="sidebar-link {{ request()->routeIs('admin.index') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                Dashboard Admin
+                Dashboard Dekan
             </a>
             <a href="{{ route('admin.internal') }}" class="sidebar-link {{ request()->routeIs('admin.internal') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>

@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
-@section('title','Dashboard Admin')
-@section('page-title','Dashboard Admin')
+@section('title','Dashboard Dekan')
+@section('page-title','Dashboard Dekan')
 @section('content')
 
 {{-- Stat Cards --}}
