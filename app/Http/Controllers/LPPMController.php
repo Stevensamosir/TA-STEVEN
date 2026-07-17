@@ -140,7 +140,6 @@ class LPPMController extends Controller
             'year'           => 'required|integer|min:1970|max:' . date('Y'),
             'month'          => 'required|integer|min:1|max:12',
             'funding_source' => 'nullable|string|max:255',
-            'visibility'     => 'required|in:public,private',
         ]);
 
         $lecturer = $this->findLecturerById((int) $request->lecturer_id);
@@ -152,7 +151,7 @@ class LPPMController extends Controller
         }
 
         $lecturer->researches()->create(array_merge(
-            $request->only(['title', 'year', 'month', 'funding_source', 'visibility']),
+            $request->only(['title', 'year', 'month', 'funding_source']),
             ['input_by_lppm_id' => auth()->id()]
         ));
 
@@ -171,7 +170,6 @@ class LPPMController extends Controller
             'pkm_scheme'      => 'nullable|in:PKM-RE,PKM-RSH,PKM-K,PKM-PM,PKM-PI,PKM-KC,PKM-KI,PKM-VGK,PKM-AI,PKM-GFT',
             'student_members' => 'nullable|string|max:1000',
             'role'            => 'required|in:Ketua,Anggota',
-            'visibility'      => 'required|in:public,private',
         ]);
 
         $lecturer = $this->findLecturerById((int) $request->lecturer_id);
@@ -184,7 +182,7 @@ class LPPMController extends Controller
 
         $lecturer->communityServices()->create(
             array_merge(
-                $request->only(['title', 'year', 'month', 'location', 'pkm_type', 'pkm_scheme', 'student_members', 'visibility']),
+                $request->only(['title', 'year', 'month', 'location', 'pkm_type', 'pkm_scheme', 'student_members']),
                 ['input_by_lppm_id' => auth()->id()]
             ),
             ['role' => $request->role]
@@ -221,10 +219,9 @@ class LPPMController extends Controller
             'year'           => 'required|integer|min:1970|max:' . date('Y'),
             'month'          => 'required|integer|min:1|max:12',
             'funding_source' => 'nullable|string|max:255',
-            'visibility'     => 'required|in:public,private',
         ]);
 
-        $research->update($request->only(['title', 'year', 'month', 'funding_source', 'visibility']));
+        $research->update($request->only(['title', 'year', 'month', 'funding_source']));
 
         return back()->with('success', 'Data penelitian berhasil diperbarui.');
     }
@@ -248,7 +245,6 @@ class LPPMController extends Controller
             'pkm_scheme'      => 'nullable|in:PKM-RE,PKM-RSH,PKM-K,PKM-PM,PKM-PI,PKM-KC,PKM-KI,PKM-VGK,PKM-AI,PKM-GFT',
             'student_members' => 'nullable|string|max:1000',
             'role'            => 'required|in:Ketua,Anggota',
-            'visibility'      => 'required|in:public,private',
         ]);
 
         $pkm = CommunityService::with('lecturers.user')->findOrFail($id);
@@ -261,7 +257,7 @@ class LPPMController extends Controller
         $this->assertLecturerInFaculty($lecturer);
 
         $pkm->update($request->only([
-            'title', 'year', 'month', 'location', 'pkm_type', 'pkm_scheme', 'student_members', 'visibility',
+            'title', 'year', 'month', 'location', 'pkm_type', 'pkm_scheme', 'student_members',
         ]));
 
         // Perbarui peran dosen ini pada kegiatan (kolom pivot).

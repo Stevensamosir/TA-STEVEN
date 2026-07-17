@@ -31,13 +31,6 @@
                     <input type="text" name="certificate_number" placeholder="Nomor sertifikat"
                         class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Visibilitas</label>
-                    <select name="visibility" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
-                        <option value="public">Publik</option>
-                        <option value="private">Privat</option>
-                    </select>
-                </div>
             </div>
             <div class="mt-4">
                 <button type="submit" class="bg-del text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-del-light transition-colors">
@@ -64,7 +57,6 @@
                         <th class="px-5 py-3 text-left">Tahun</th>
                         <th class="px-5 py-3 text-left">Jenis</th>
                         <th class="px-5 py-3 text-left">No. Sertifikat</th>
-                        <th class="px-5 py-3 text-left">Visibilitas</th>
                         <th class="px-5 py-3 text-left">Aksi</th>
                     </tr>
                 </thead>
@@ -76,14 +68,6 @@
                         <td class="px-5 py-3 text-gray-600">{{ $item->year }}</td>
                         <td class="px-5 py-3 text-gray-500">{{ $item->type ?? '-' }}</td>
                         <td class="px-5 py-3 text-gray-500">{{ $item->certificate_number ?? '-' }}</td>
-                        <td class="px-5 py-3">
-                            <form action="{{ route('dosen.hki.visibility', $item->id) }}" method="POST">
-                                @csrf @method('PATCH')
-                                <button type="submit" class="text-xs font-medium px-2.5 py-1 rounded-full {{ $item->visibility === 'public' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500' }}">
-                                    {{ $item->visibility === 'public' ? 'Publik' : 'Privat' }}
-                                </button>
-                            </form>
-                        </td>
                         <td class="px-5 py-3">
                             <div class="flex items-center gap-2">
                                 <button onclick="toggleEditRow('hki', {{ $item->id }})"
@@ -103,7 +87,7 @@
                     </tr>
                     <!-- Edit Row -->
                     <tr id="edit-hki-{{ $item->id }}" class="hidden bg-blue-50/30">
-                        <td colspan="7" class="px-5 py-4">
+                        <td colspan="6" class="px-5 py-4">
                             <form action="{{ route('dosen.hki.update', $item->id) }}" method="POST">
                                 @csrf @method('PUT')
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -115,10 +99,6 @@
                                            class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
                                     <input type="text" name="certificate_number" value="{{ $item->certificate_number }}" placeholder="No. Sertifikat"
                                            class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
-                                    <select name="visibility" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
-                                        <option value="public" @selected($item->visibility === 'public')>Publik</option>
-                                        <option value="private" @selected($item->visibility === 'private')>Privat</option>
-                                    </select>
                                 </div>
                                 <div class="flex gap-3 mt-3">
                                     <button type="submit" class="bg-del text-white px-4 py-2 rounded-lg text-sm font-medium">Simpan</button>

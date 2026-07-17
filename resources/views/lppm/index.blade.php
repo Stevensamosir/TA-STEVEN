@@ -61,14 +61,6 @@
                            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
                 </div>
             </div>
-            <div>
-                <label class="text-sm font-medium text-gray-700 block mb-1.5">Visibilitas</label>
-                <select name="visibility" required
-                        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
-                    <option value="public">Publik</option>
-                    <option value="private">Privat</option>
-                </select>
-            </div>
             <button type="submit" disabled id="btnSimpanPenelitian"
                     class="bg-del text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-del-light transition disabled:opacity-40 disabled:cursor-not-allowed">
                 Simpan Penelitian
@@ -155,14 +147,6 @@
                 <label class="text-sm font-medium text-gray-700 block mb-1.5">Anggota Mahasiswa</label>
                 <input type="text" name="student_members" placeholder="Nama, dipisah koma"
                        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
-            </div>
-            <div>
-                <label class="text-sm font-medium text-gray-700 block mb-1.5">Visibilitas</label>
-                <select name="visibility" required
-                        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
-                    <option value="public">Publik</option>
-                    <option value="private">Privat</option>
-                </select>
             </div>
             <button type="submit" disabled id="btnSimpanPkm"
                     class="bg-del text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-del-light transition disabled:opacity-40 disabled:cursor-not-allowed">

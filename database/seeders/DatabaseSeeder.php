@@ -237,46 +237,45 @@ class DatabaseSeeder extends Seeder
         // Oppir (dosen biasa) dipakai sebagai contoh terlengkap
         // ============================================================
         Education::insert([
-            ['lecturer_id' => $lecOppir->id,  'degree' => 'S1', 'institution' => 'Universitas Sumatera Utara', 'major' => 'Teknik Informatika',          'year' => 2015, 'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecOppir->id,  'degree' => 'S2', 'institution' => 'Institut Teknologi Bandung', 'major' => 'Informatika',                  'year' => 2019, 'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecTegar->id,  'degree' => 'S1', 'institution' => 'Institut Pertanian Bogor',   'major' => 'Statistika',                   'year' => 2016, 'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecTegar->id,  'degree' => 'S2', 'institution' => 'Institut Teknologi Bandung', 'major' => 'Sains Komputasi',              'year' => 2021, 'visibility' => 'private', 'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecAna->id,    'degree' => 'S1', 'institution' => 'Universitas Pendidikan Indonesia', 'major' => 'Pendidikan Matematika', 'year' => 2013, 'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecAna->id,    'degree' => 'S2', 'institution' => 'Universitas Pendidikan Indonesia', 'major' => 'Pendidikan Teknologi',  'year' => 2018, 'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecFebrian->id,'degree' => 'S1', 'institution' => 'Universitas Sumatera Utara', 'major' => 'Teknik Elektro',               'year' => 2014, 'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecFebrian->id,'degree' => 'S2', 'institution' => 'Institut Teknologi Bandung', 'major' => 'Teknik Elektro',               'year' => 2020, 'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecOppir->id,  'degree' => 'S1', 'institution' => 'Universitas Sumatera Utara', 'major' => 'Teknik Informatika',          'year' => 2015, 'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecOppir->id,  'degree' => 'S2', 'institution' => 'Institut Teknologi Bandung', 'major' => 'Informatika',                  'year' => 2019, 'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecTegar->id,  'degree' => 'S1', 'institution' => 'Institut Pertanian Bogor',   'major' => 'Statistika',                   'year' => 2016, 'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecTegar->id,  'degree' => 'S2', 'institution' => 'Institut Teknologi Bandung', 'major' => 'Sains Komputasi',              'year' => 2021,'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecAna->id,    'degree' => 'S1', 'institution' => 'Universitas Pendidikan Indonesia', 'major' => 'Pendidikan Matematika', 'year' => 2013, 'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecAna->id,    'degree' => 'S2', 'institution' => 'Universitas Pendidikan Indonesia', 'major' => 'Pendidikan Teknologi',  'year' => 2018, 'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecFebrian->id,'degree' => 'S1', 'institution' => 'Universitas Sumatera Utara', 'major' => 'Teknik Elektro',               'year' => 2014, 'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecFebrian->id,'degree' => 'S2', 'institution' => 'Institut Teknologi Bandung', 'major' => 'Teknik Elektro',               'year' => 2020, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         Research::insert([
-            ['lecturer_id' => $lecOppir->id,  'title' => 'Pengembangan Framework Microservice untuk Sistem Informasi Perguruan Tinggi Vokasi', 'year' => 2023, 'funding_source' => 'DIPA IT Del', 'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecOppir->id,  'title' => 'Analisis Keamanan Aplikasi Web Berbasis Laravel pada Institusi Pendidikan',          'year' => 2024, 'funding_source' => 'Mandiri',    'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecTegar->id,  'title' => 'Implementasi Machine Learning untuk Prediksi Performa Mahasiswa',                   'year' => 2023, 'funding_source' => 'DIPA IT Del', 'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecFebrian->id,'title' => 'Sistem Monitoring Energi Berbasis IoT untuk Bangunan Kampus',                       'year' => 2024, 'funding_source' => 'Kemendikbud', 'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecFebrian->id,'title' => 'Desain Sistem Kendali Otomatis pada Perangkat Embedded',                            'year' => 2023, 'funding_source' => 'DIPA IT Del', 'visibility' => 'private', 'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecOppir->id,  'title' => 'Pengembangan Framework Microservice untuk Sistem Informasi Perguruan Tinggi Vokasi', 'year' => 2023, 'funding_source' => 'DIPA IT Del', 'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecOppir->id,  'title' => 'Analisis Keamanan Aplikasi Web Berbasis Laravel pada Institusi Pendidikan',          'year' => 2024, 'funding_source' => 'Mandiri',    'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecTegar->id,  'title' => 'Implementasi Machine Learning untuk Prediksi Performa Mahasiswa',                   'year' => 2023, 'funding_source' => 'DIPA IT Del', 'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecFebrian->id,'title' => 'Sistem Monitoring Energi Berbasis IoT untuk Bangunan Kampus',                       'year' => 2024, 'funding_source' => 'Kemendikbud', 'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecFebrian->id,'title' => 'Desain Sistem Kendali Otomatis pada Perangkat Embedded',                            'year' => 2023, 'funding_source' => 'DIPA IT Del','created_at' => now(), 'updated_at' => now()],
         ]);
 
         $pkmSeed = [
-            ['lecturer' => $lecOppir,   'title' => 'Pelatihan Pemrograman Web untuk Siswa SMK se-Kabupaten Toba',     'year' => 2023, 'location' => 'Toba, Sumatera Utara',    'visibility' => 'public'],
-            ['lecturer' => $lecOppir,   'title' => 'Workshop Digitalisasi UMKM Berbasis Aplikasi Web',                 'year' => 2024, 'location' => 'Laguboti, Toba',          'visibility' => 'public'],
-            ['lecturer' => $lecTegar,   'title' => 'Pendampingan Analisis Data untuk Pemda Kabupaten Toba',            'year' => 2024, 'location' => 'Balige, Toba',            'visibility' => 'public'],
-            ['lecturer' => $lecFebrian, 'title' => 'Instalasi dan Pelatihan Sistem Panel Surya untuk Desa Terpencil',  'year' => 2023, 'location' => 'Samosir, Sumatera Utara', 'visibility' => 'public'],
+            ['lecturer' => $lecOppir,   'title' => 'Pelatihan Pemrograman Web untuk Siswa SMK se-Kabupaten Toba',     'year' => 2023, 'location' => 'Toba, Sumatera Utara',],
+            ['lecturer' => $lecOppir,   'title' => 'Workshop Digitalisasi UMKM Berbasis Aplikasi Web',                 'year' => 2024, 'location' => 'Laguboti, Toba',      ],
+            ['lecturer' => $lecTegar,   'title' => 'Pendampingan Analisis Data untuk Pemda Kabupaten Toba',            'year' => 2024, 'location' => 'Balige, Toba',        ],
+            ['lecturer' => $lecFebrian, 'title' => 'Instalasi dan Pelatihan Sistem Panel Surya untuk Desa Terpencil',  'year' => 2023, 'location' => 'Samosir, Sumatera Utara'],
         ];
         foreach ($pkmSeed as $row) {
             $cs = CommunityService::create([
                 'title'      => $row['title'],
                 'year'       => $row['year'],
                 'location'   => $row['location'],
-                'visibility' => $row['visibility'],
             ]);
             $cs->lecturers()->attach($row['lecturer']->id, ['role' => 'Ketua']);
         }
 
         Publication::insert([
-            ['lecturer_id' => $lecOppir->id,  'title' => 'Microservice Architecture for Higher Education Information Systems: A Case Study at Vocational Faculty',     'year' => 2023, 'publisher' => 'Journal of Information Systems Engineering and Business Intelligence', 'publisher_url' => 'https://e-journal.unair.ac.id/JISEBI',             'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecOppir->id,  'title' => 'V-Model Implementation in Web-Based Academic Information System Development: A Systematic Review',           'year' => 2024, 'publisher' => 'JURNAL PETISI',                                                      'publisher_url' => 'https://e-journal.unmul.ac.id/index.php/petisi',  'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecTegar->id,  'title' => 'Predictive Analytics for Student Academic Performance Using Ensemble Machine Learning Methods',              'year' => 2023, 'publisher' => 'IJCCS (Indonesian Journal of Computing and Cybernetics Systems)',   'publisher_url' => 'https://jurnal.ugm.ac.id/ijccs',                  'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecFebrian->id,'title' => 'IoT-Based Energy Monitoring System for Campus Buildings: Design and Implementation',                         'year' => 2024, 'publisher' => 'IEEE Access',                                                        'publisher_url' => 'https://ieeexplore.ieee.org',                     'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
-            ['lecturer_id' => $lecAna->id,    'title' => 'Analisis Efektivitas Pembelajaran Berbasis Proyek pada Program Studi Vokasi Teknologi Informasi',            'year' => 2023, 'publisher' => 'Jurnal Pendidikan Vokasi',                                           'publisher_url' => 'https://journal.uny.ac.id/index.php/jpv',         'visibility' => 'public',  'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecOppir->id,  'title' => 'Microservice Architecture for Higher Education Information Systems: A Case Study at Vocational Faculty',     'year' => 2023, 'publisher' => 'Journal of Information Systems Engineering and Business Intelligence', 'publisher_url' => 'https://e-journal.unair.ac.id/JISEBI',             'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecOppir->id,  'title' => 'V-Model Implementation in Web-Based Academic Information System Development: A Systematic Review',           'year' => 2024, 'publisher' => 'JURNAL PETISI',                                                      'publisher_url' => 'https://e-journal.unmul.ac.id/index.php/petisi',  'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecTegar->id,  'title' => 'Predictive Analytics for Student Academic Performance Using Ensemble Machine Learning Methods',              'year' => 2023, 'publisher' => 'IJCCS (Indonesian Journal of Computing and Cybernetics Systems)',   'publisher_url' => 'https://jurnal.ugm.ac.id/ijccs',                  'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecFebrian->id,'title' => 'IoT-Based Energy Monitoring System for Campus Buildings: Design and Implementation',                         'year' => 2024, 'publisher' => 'IEEE Access',                                                        'publisher_url' => 'https://ieeexplore.ieee.org',                     'created_at' => now(), 'updated_at' => now()],
+            ['lecturer_id' => $lecAna->id,    'title' => 'Analisis Efektivitas Pembelajaran Berbasis Proyek pada Program Studi Vokasi Teknologi Informasi',            'year' => 2023, 'publisher' => 'Jurnal Pendidikan Vokasi',                                           'publisher_url' => 'https://journal.uny.ac.id/index.php/jpv',         'created_at' => now(), 'updated_at' => now()],
         ]);
 
         $this->command->info('✅ Seeder selesai:');

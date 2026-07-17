@@ -112,15 +112,15 @@
                     <!-- Stats -->
                     <div class="flex gap-4 pt-3 border-t border-gray-50">
                         <div class="text-center">
-                            <div class="text-sm font-bold text-del">{{ $lecturer->publications()->where('visibility','public')->count() }}</div>
+                            <div class="text-sm font-bold text-del">{{ $lecturer->publications()->count() }}</div>
                             <div class="text-xs text-gray-400">Publikasi</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-sm font-bold text-del">{{ $lecturer->researches()->where('visibility','public')->count() }}</div>
+                            <div class="text-sm font-bold text-del">{{ $lecturer->researches()->count() }}</div>
                             <div class="text-xs text-gray-400">Penelitian</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-sm font-bold text-del">{{ $lecturer->communityServices()->where('visibility','public')->count() }}</div>
+                            <div class="text-sm font-bold text-del">{{ $lecturer->communityServices()->count() }}</div>
                             <div class="text-xs text-gray-400">Pengabdian</div>
                         </div>
                     </div>

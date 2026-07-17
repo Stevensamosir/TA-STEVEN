@@ -42,49 +42,42 @@ Route::middleware(['auth', 'role:dosen,kaprodi,dekan'])->prefix('dashboard')->na
     Route::post('/pendidikan',                  [DosenController::class, 'storePendidikan'])->name('pendidikan.store');
     Route::put('/pendidikan/{id}',              [DosenController::class, 'updatePendidikan'])->name('pendidikan.update');
     Route::delete('/pendidikan/{id}',           [DosenController::class, 'destroyPendidikan'])->name('pendidikan.destroy');
-    Route::patch('/pendidikan/{id}/visibility', [DosenController::class, 'togglePendidikanVisibility'])->name('pendidikan.visibility');
 
     // Penelitian
     Route::get('/penelitian',                   [DosenController::class, 'penelitian'])->name('penelitian');
     Route::post('/penelitian',                  [DosenController::class, 'storePenelitian'])->name('penelitian.store');
     Route::put('/penelitian/{id}',              [DosenController::class, 'updatePenelitian'])->name('penelitian.update');
     Route::delete('/penelitian/{id}',           [DosenController::class, 'destroyPenelitian'])->name('penelitian.destroy');
-    Route::patch('/penelitian/{id}/visibility', [DosenController::class, 'togglePenelitianVisibility'])->name('penelitian.visibility');
 
     // Pengabdian
     Route::get('/pengabdian',                   [DosenController::class, 'pengabdian'])->name('pengabdian');
     Route::post('/pengabdian',                  [DosenController::class, 'storePengabdian'])->name('pengabdian.store');
     Route::put('/pengabdian/{id}',              [DosenController::class, 'updatePengabdian'])->name('pengabdian.update');
     Route::delete('/pengabdian/{id}',           [DosenController::class, 'destroyPengabdian'])->name('pengabdian.destroy');
-    Route::patch('/pengabdian/{id}/visibility', [DosenController::class, 'togglePengabdianVisibility'])->name('pengabdian.visibility');
 
     // Publikasi
     Route::get('/publikasi',                    [DosenController::class, 'publikasi'])->name('publikasi');
     Route::post('/publikasi',                   [DosenController::class, 'storePublikasi'])->name('publikasi.store');
     Route::put('/publikasi/{id}',               [DosenController::class, 'updatePublikasi'])->name('publikasi.update');
     Route::delete('/publikasi/{id}',            [DosenController::class, 'destroyPublikasi'])->name('publikasi.destroy');
-    Route::patch('/publikasi/{id}/visibility',  [DosenController::class, 'togglePublikasiVisibility'])->name('publikasi.visibility');
 
     // Buku
     Route::get('/buku',                   [DosenController::class, 'buku'])->name('buku');
     Route::post('/buku',                  [DosenController::class, 'storeBuku'])->name('buku.store');
     Route::put('/buku/{id}',              [DosenController::class, 'updateBuku'])->name('buku.update');
     Route::delete('/buku/{id}',           [DosenController::class, 'destroyBuku'])->name('buku.destroy');
-    Route::patch('/buku/{id}/visibility', [DosenController::class, 'toggleBukuVisibility'])->name('buku.visibility');
 
     // HKI
     Route::get('/hki',                   [DosenController::class, 'hki'])->name('hki');
     Route::post('/hki',                  [DosenController::class, 'storeHki'])->name('hki.store');
     Route::put('/hki/{id}',              [DosenController::class, 'updateHki'])->name('hki.update');
     Route::delete('/hki/{id}',           [DosenController::class, 'destroyHki'])->name('hki.destroy');
-    Route::patch('/hki/{id}/visibility', [DosenController::class, 'toggleHkiVisibility'])->name('hki.visibility');
 
     // Penghargaan
     Route::get('/penghargaan',                   [DosenController::class, 'penghargaan'])->name('penghargaan');
     Route::post('/penghargaan',                  [DosenController::class, 'storePenghargaan'])->name('penghargaan.store');
     Route::put('/penghargaan/{id}',              [DosenController::class, 'updatePenghargaan'])->name('penghargaan.update');
     Route::delete('/penghargaan/{id}',           [DosenController::class, 'destroyPenghargaan'])->name('penghargaan.destroy');
-    Route::patch('/penghargaan/{id}/visibility', [DosenController::class, 'togglePenghargaanVisibility'])->name('penghargaan.visibility');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

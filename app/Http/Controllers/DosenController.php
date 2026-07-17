@@ -138,9 +138,8 @@ class DosenController extends Controller
             'degree'      => 'required|string|max:100',
             'institution' => 'required|string|max:255',
             'year'        => 'required|integer|min:1970|max:'.date('Y'),
-            'visibility'  => 'required|in:public,private',
         ]);
-        $this->getLecturer()->educations()->create($request->only(['degree','institution','year','visibility']));
+        $this->getLecturer()->educations()->create($request->only(['degree','institution','year']));
         return back()->with('success', 'Data pendidikan berhasil ditambahkan.');
     }
 
@@ -150,10 +149,9 @@ class DosenController extends Controller
             'degree'      => 'required|string|max:100',
             'institution' => 'required|string|max:255',
             'year'        => 'required|integer|min:1970|max:'.date('Y'),
-            'visibility'  => 'required|in:public,private',
         ]);
         Education::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['degree','institution','year','visibility']));
+            ->update($request->only(['degree','institution','year']));
         return back()->with('success', 'Data pendidikan berhasil diperbarui.');
     }
 
@@ -161,13 +159,6 @@ class DosenController extends Controller
     {
         Education::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
         return back()->with('success', 'Data pendidikan berhasil dihapus.');
-    }
-
-    public function togglePendidikanVisibility($id)
-    {
-        $edu = Education::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $edu->update(['visibility' => $edu->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── PENELITIAN ──────────────────────────────────────────
@@ -186,9 +177,8 @@ class DosenController extends Controller
             'year'           => 'required|integer|min:1970|max:'.date('Y'),
             'month'          => 'required|integer|min:1|max:12',
             'funding_source' => 'nullable|string|max:255',
-            'visibility'     => 'required|in:public,private',
         ]);
-        $this->getLecturer()->researches()->create($request->only(['title','year','month','funding_source','visibility']));
+        $this->getLecturer()->researches()->create($request->only(['title','year','month','funding_source']));
         return back()->with('success', 'Data penelitian berhasil ditambahkan.');
     }
 
@@ -199,10 +189,9 @@ class DosenController extends Controller
             'year'           => 'required|integer|min:1970|max:'.date('Y'),
             'month'          => 'required|integer|min:1|max:12',
             'funding_source' => 'nullable|string|max:255',
-            'visibility'     => 'required|in:public,private',
         ]);
         Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['title','year','month','funding_source','visibility']));
+            ->update($request->only(['title','year','month','funding_source']));
         return back()->with('success', 'Data penelitian berhasil diperbarui.');
     }
 
@@ -210,13 +199,6 @@ class DosenController extends Controller
     {
         Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
         return back()->with('success', 'Data penelitian berhasil dihapus.');
-    }
-
-    public function togglePenelitianVisibility($id)
-    {
-        $r = Research::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $r->update(['visibility' => $r->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── PENGABDIAN ──────────────────────────────────────────
@@ -237,10 +219,9 @@ class DosenController extends Controller
             'pkm_type'        => 'nullable|in:Internal,Nasional,Internasional',
             'pkm_scheme'      => 'nullable|in:PKM-RE,PKM-RSH,PKM-K,PKM-PM,PKM-PI,PKM-KC,PKM-KI,PKM-VGK,PKM-AI,PKM-GFT',
             'student_members' => 'nullable|string|max:1000',
-            'visibility'      => 'required|in:public,private',
         ]);
         $this->getLecturer()->communityServices()->create(
-            $request->only(['title','year','month','location','pkm_type','pkm_scheme','student_members','visibility']),
+            $request->only(['title','year','month','location','pkm_type','pkm_scheme','student_members']),
             ['role' => 'Ketua']
         );
         return back()->with('success', 'Data pengabdian berhasil ditambahkan.');
@@ -256,10 +237,9 @@ class DosenController extends Controller
             'pkm_type'        => 'nullable|in:Internal,Nasional,Internasional',
             'pkm_scheme'      => 'nullable|in:PKM-RE,PKM-RSH,PKM-K,PKM-PM,PKM-PI,PKM-KC,PKM-KI,PKM-VGK,PKM-AI,PKM-GFT',
             'student_members' => 'nullable|string|max:1000',
-            'visibility'      => 'required|in:public,private',
         ]);
         $item = $this->getLecturer()->communityServices()->where('community_services.id', $id)->firstOrFail();
-        $item->update($request->only(['title','year','month','location','pkm_type','pkm_scheme','student_members','visibility']));
+        $item->update($request->only(['title','year','month','location','pkm_type','pkm_scheme','student_members']));
         return back()->with('success', 'Data pengabdian berhasil diperbarui.');
     }
 
@@ -275,13 +255,6 @@ class DosenController extends Controller
         }
 
         return back()->with('success', 'Data pengabdian berhasil dihapus.');
-    }
-
-    public function togglePengabdianVisibility($id)
-    {
-        $item = $this->getLecturer()->communityServices()->where('community_services.id', $id)->firstOrFail();
-        $item->update(['visibility' => $item->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── PUBLIKASI ───────────────────────────────────────────
@@ -300,9 +273,8 @@ class DosenController extends Controller
             'publisher'     => 'nullable|string|max:255',
             'publisher_url' => 'nullable|string|max:500',
             'year'          => 'required|integer|min:1970|max:'.date('Y'),
-            'visibility'    => 'required|in:public,private',
         ]);
-        $this->getLecturer()->publications()->create($request->only(['title','publisher','publisher_url','year','visibility','authors']));
+        $this->getLecturer()->publications()->create($request->only(['title','publisher','publisher_url','year','authors']));
         return back()->with('success', 'Data publikasi berhasil ditambahkan.');
     }
 
@@ -313,10 +285,9 @@ class DosenController extends Controller
             'publisher'     => 'nullable|string|max:255',
             'publisher_url' => 'nullable|string|max:500',
             'year'          => 'required|integer|min:1970|max:'.date('Y'),
-            'visibility'    => 'required|in:public,private',
         ]);
         Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['title','publisher','publisher_url','year','visibility','authors']));
+            ->update($request->only(['title','publisher','publisher_url','year','authors']));
         return back()->with('success', 'Data publikasi berhasil diperbarui.');
     }
 
@@ -324,13 +295,6 @@ class DosenController extends Controller
     {
         Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
         return back()->with('success', 'Data publikasi berhasil dihapus.');
-    }
-
-    public function togglePublikasiVisibility($id)
-    {
-        $p = Publication::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $p->update(['visibility' => $p->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── BUKU ──────────────────────────────────────────
@@ -348,9 +312,8 @@ class DosenController extends Controller
             'year'       => 'required|integer|min:1970|max:'.date('Y'),
             'publisher'  => 'nullable|string|max:255',
             'isbn'       => 'nullable|string|max:30',
-            'visibility' => 'required|in:public,private',
         ]);
-        $this->getLecturer()->books()->create($request->only(['title','year','publisher','isbn','visibility']));
+        $this->getLecturer()->books()->create($request->only(['title','year','publisher','isbn']));
         return back()->with('success', 'Data buku berhasil ditambahkan.');
     }
 
@@ -361,10 +324,9 @@ class DosenController extends Controller
             'year'       => 'required|integer|min:1970|max:'.date('Y'),
             'publisher'  => 'nullable|string|max:255',
             'isbn'       => 'nullable|string|max:30',
-            'visibility' => 'required|in:public,private',
         ]);
         Book::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['title','year','publisher','isbn','visibility']));
+            ->update($request->only(['title','year','publisher','isbn']));
         return back()->with('success', 'Data buku berhasil diperbarui.');
     }
 
@@ -372,13 +334,6 @@ class DosenController extends Controller
     {
         Book::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
         return back()->with('success', 'Data buku berhasil dihapus.');
-    }
-
-    public function toggleBukuVisibility($id)
-    {
-        $b = Book::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $b->update(['visibility' => $b->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── HKI ───────────────────────────────────────────
@@ -396,9 +351,8 @@ class DosenController extends Controller
             'year'               => 'required|integer|min:1970|max:'.date('Y'),
             'type'               => 'nullable|string|max:100',
             'certificate_number' => 'nullable|string|max:100',
-            'visibility'         => 'required|in:public,private',
         ]);
-        $this->getLecturer()->hkis()->create($request->only(['title','year','type','certificate_number','visibility']));
+        $this->getLecturer()->hkis()->create($request->only(['title','year','type','certificate_number']));
         return back()->with('success', 'Data HKI berhasil ditambahkan.');
     }
 
@@ -409,10 +363,9 @@ class DosenController extends Controller
             'year'               => 'required|integer|min:1970|max:'.date('Y'),
             'type'               => 'nullable|string|max:100',
             'certificate_number' => 'nullable|string|max:100',
-            'visibility'         => 'required|in:public,private',
         ]);
         Hki::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['title','year','type','certificate_number','visibility']));
+            ->update($request->only(['title','year','type','certificate_number']));
         return back()->with('success', 'Data HKI berhasil diperbarui.');
     }
 
@@ -420,13 +373,6 @@ class DosenController extends Controller
     {
         Hki::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
         return back()->with('success', 'Data HKI berhasil dihapus.');
-    }
-
-    public function toggleHkiVisibility($id)
-    {
-        $h = Hki::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $h->update(['visibility' => $h->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── PENGHARGAAN ───────────────────────────────────
@@ -446,9 +392,8 @@ class DosenController extends Controller
             'rank'         => 'nullable|string|max:100',
             'date'         => 'required|date',
             'evidence_url' => 'nullable|url|max:500',
-            'visibility'   => 'required|in:public,private',
         ]);
-        $this->getLecturer()->awards()->create($request->only(['name','level','organizer','rank','date','evidence_url','visibility']));
+        $this->getLecturer()->awards()->create($request->only(['name','level','organizer','rank','date','evidence_url']));
         return back()->with('success', 'Data penghargaan berhasil ditambahkan.');
     }
 
@@ -461,10 +406,9 @@ class DosenController extends Controller
             'rank'         => 'nullable|string|max:100',
             'date'         => 'required|date',
             'evidence_url' => 'nullable|url|max:500',
-            'visibility'   => 'required|in:public,private',
         ]);
         Award::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['name','level','organizer','rank','date','evidence_url','visibility']));
+            ->update($request->only(['name','level','organizer','rank','date','evidence_url']));
         return back()->with('success', 'Data penghargaan berhasil diperbarui.');
     }
 
@@ -472,13 +416,6 @@ class DosenController extends Controller
     {
         Award::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
         return back()->with('success', 'Data penghargaan berhasil dihapus.');
-    }
-
-    public function togglePenghargaanVisibility($id)
-    {
-        $a = Award::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
-        $a->update(['visibility' => $a->visibility === 'public' ? 'private' : 'public']);
-        return back()->with('success', 'Visibilitas berhasil diperbarui.');
     }
 
     // ─── PASSWORD ────────────────────────────────────────────

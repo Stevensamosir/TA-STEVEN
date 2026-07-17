@@ -31,18 +31,18 @@ class PublicController extends Controller
 
     public function show(Request $request, $id)
     {
-        // FIX BUG PRIVASI: semua eager load SEKARANG difilter visibility=public,
-        // supaya data yang ditandai Privat oleh dosen TIDAK bocor ke pengunjung
-        // tanpa login. Sebelumnya tidak difilter sama sekali.
+        // Visibilitas per-item sudah dihapus: semua data tridharma bersifat publik.
+        // Gerbang privasi tersisa di level PROFIL (is_public) -- dosen yang tidak
+        // publik (mis. nonaktif dari CIS) tetap tidak bisa diakses di sini.
         $lecturer = Lecturer::with([
             'user', 'studyProgram',
-            'educations'        => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
-            'researches'        => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
-            'communityServices' => fn($q) => $q->where('community_services.visibility', 'public')->orderByDesc('year'),
-            'publications'      => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
-            'books'             => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
-            'hkis'              => fn($q) => $q->where('visibility', 'public')->orderByDesc('year'),
-            'awards'            => fn($q) => $q->where('visibility', 'public')->orderByDesc('date'),
+            'educations'        => fn($q) => $q->orderByDesc('year'),
+            'researches'        => fn($q) => $q->orderByDesc('year'),
+            'communityServices' => fn($q) => $q->orderByDesc('year'),
+            'publications'      => fn($q) => $q->orderByDesc('year'),
+            'books'             => fn($q) => $q->orderByDesc('year'),
+            'hkis'              => fn($q) => $q->orderByDesc('year'),
+            'awards'            => fn($q) => $q->orderByDesc('date'),
         ])->where('is_public', true)->findOrFail($id);
 
         $filterYear  = $request->year;

@@ -71,13 +71,6 @@
                 </div>
             </div>
             <div class="flex flex-col sm:flex-row gap-3 sm:items-end">
-                <div class="flex-1">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Visibilitas</label>
-                    <select name="visibility" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
-                        <option value="public">Publik</option>
-                        <option value="private">Privat</option>
-                    </select>
-                </div>
                 <button type="submit" class="w-full sm:w-auto bg-del text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-del-light">
                     + Tambah
                 </button>
@@ -182,10 +175,6 @@
                                        class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
                             </div>
                             <div class="flex gap-3">
-                                <select name="visibility" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
-                                    <option value="public" @selected($item->visibility === 'public')>Publik</option>
-                                    <option value="private" @selected($item->visibility === 'private')>Privat</option>
-                                </select>
                                 <button type="submit" class="bg-del text-white px-4 py-2 rounded-lg text-sm font-medium">Simpan</button>
                                 <button type="button" onclick="toggleEditRow('pgb', {{ $item->id }})"
                                         class="px-4 py-2 rounded-lg text-sm text-gray-500 border border-gray-200">Batal</button>

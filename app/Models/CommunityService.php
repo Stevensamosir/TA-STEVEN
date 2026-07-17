@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CommunityService extends Model
 {
-    protected $fillable = ['title', 'year', 'month', 'location', 'pkm_type', 'pkm_scheme', 'student_members', 'visibility', 'input_by_lppm_id'];
+    protected $fillable = ['title', 'year', 'month', 'location', 'pkm_type', 'pkm_scheme', 'student_members', 'input_by_lppm_id'];
 
     protected $table = 'community_services';
 
@@ -17,8 +17,4 @@ class CommunityService extends Model
                      ->withTimestamps();
     }
 
-    public function scopePublic($query)
-    {
-        return $query->where('visibility', 'public');
-    }
 }

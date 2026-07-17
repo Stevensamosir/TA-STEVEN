@@ -31,8 +31,6 @@
     // Daftar bulan untuk dropdown di form edit inline.
     $bulanList = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
-    // Badge kecil untuk item yang tersembunyi dari publik (visibility private).
-    $privateBadge = '<span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">Privat</span>';
 @endphp
 
 <style>
@@ -121,8 +119,7 @@
                                 @endif
                             </div>
                             <div class="flex items-center gap-2">
-                                @if(($edu->visibility ?? 'public') === 'private') {!! $privateBadge !!} @endif
-                                <span class="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-1 rounded-lg">{{ $edu->year }}</span>
+                                                                <span class="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-1 rounded-lg">{{ $edu->year }}</span>
                             </div>
                         </div>
                     </div>
@@ -149,8 +146,7 @@
                             <div class="flex items-start justify-between gap-2">
                                 <p class="text-sm font-medium text-gray-800 leading-snug">{{ $item->title }}</p>
                                 <div class="flex items-center gap-2 flex-shrink-0">
-                                    @if(($item->visibility ?? 'public') === 'private') {!! $privateBadge !!} @endif
-                                    @if($canEditPenelitian)
+                                                                        @if($canEditPenelitian)
                                         <button type="button"
                                                 onclick="document.getElementById('edit-penelitian-{{ $item->id }}').classList.toggle('hidden')"
                                                 class="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 px-2.5 py-0.5 rounded-lg font-medium transition-colors">
@@ -195,14 +191,6 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">Visibilitas</label>
-                                    <select name="visibility" required
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
-                                        <option value="public"  {{ ($item->visibility ?? 'public') === 'public'  ? 'selected' : '' }}>Publik</option>
-                                        <option value="private" {{ ($item->visibility ?? 'public') === 'private' ? 'selected' : '' }}>Privat</option>
-                                    </select>
-                                </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Sumber Dana</label>
@@ -242,8 +230,7 @@
                             <div class="flex items-start justify-between gap-2">
                                 <p class="text-sm font-medium text-gray-800 leading-snug">{{ $item->title }}</p>
                                 <div class="flex items-center gap-2 flex-shrink-0">
-                                    @if(($item->visibility ?? 'public') === 'private') {!! $privateBadge !!} @endif
-                                    @if($canEditPengabdian)
+                                                                        @if($canEditPengabdian)
                                         <button type="button"
                                                 onclick="document.getElementById('edit-pengabdian-{{ $item->id }}').classList.toggle('hidden')"
                                                 class="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-lg font-medium transition-colors">
@@ -349,14 +336,6 @@
                                 <input type="text" name="student_members" value="{{ $item->student_members }}" placeholder="Nama, dipisah koma"
                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
                             </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Visibilitas</label>
-                                <select name="visibility" required
-                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
-                                    <option value="public"  {{ ($item->visibility ?? 'public') === 'public'  ? 'selected' : '' }}>Publik</option>
-                                    <option value="private" {{ ($item->visibility ?? 'public') === 'private' ? 'selected' : '' }}>Privat</option>
-                                </select>
-                            </div>
                             <div class="flex gap-2">
                                 <button type="submit" class="bg-del text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-del-light transition">Simpan</button>
                                 <button type="button"
@@ -392,8 +371,7 @@
                                 @else
                                     <p class="text-sm font-medium text-gray-800 leading-snug">{{ $pub->title }}</p>
                                 @endif
-                                @if(($pub->visibility ?? 'public') === 'private') {!! $privateBadge !!} @endif
-                            </div>
+                                                            </div>
                             <div class="flex flex-wrap gap-2 mt-1.5">
                                 <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ $pub->year }}</span>
                                 @if($pub->publisher)
@@ -426,8 +404,7 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex items-start justify-between gap-2">
                                 <p class="text-sm font-medium text-gray-800 leading-snug">{{ $item->title }}</p>
-                                @if(($item->visibility ?? 'public') === 'private') {!! $privateBadge !!} @endif
-                            </div>
+                                                            </div>
                             <div class="flex flex-wrap gap-2 mt-1.5">
                                 <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ $item->year }}</span>
                                 @if($item->publisher)
@@ -460,8 +437,7 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex items-start justify-between gap-2">
                                 <p class="text-sm font-medium text-gray-800 leading-snug">{{ $item->title }}</p>
-                                @if(($item->visibility ?? 'public') === 'private') {!! $privateBadge !!} @endif
-                            </div>
+                                                            </div>
                             <div class="flex flex-wrap gap-2 mt-1.5">
                                 <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{{ $item->year }}</span>
                                 @if($item->type)
@@ -498,8 +474,7 @@
                                 @else
                                     <p class="text-sm font-medium text-gray-800 leading-snug">{{ $item->name }}</p>
                                 @endif
-                                @if(($item->visibility ?? 'public') === 'private') {!! $privateBadge !!} @endif
-                            </div>
+                                                            </div>
                             <div class="flex flex-wrap gap-2 mt-1.5">
                                 @if($item->level)
                                     <span class="text-xs text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded font-medium">{{ $item->level }}</span>
