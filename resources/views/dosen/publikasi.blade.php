@@ -66,7 +66,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Tahun *</label>
-                    <input type="number" name="year" id="field-year" required
+                    <input type="number" name="year" id="field-year" value="{{ old('year', now()->year) }}" required
                         min="1990" max="{{ date('Y')+1 }}" placeholder="{{ date('Y') }}"
                         class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-del/30">
                 </div>

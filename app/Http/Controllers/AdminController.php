@@ -269,24 +269,4 @@ class AdminController extends Controller
         return $pdf->download('laporan-tridharma-' . now()->format('Ymd-His') . '.pdf');
     }
 
-    // ─── PENJADWALAN (monitoring, Dekan semua Vokasi / Kaprodi scope prodi) ───
-    public function penjadwalan(Request $request)
-    {
-        $query = \App\Models\Lecturer::with(['user', 'studyProgram', 'schedules']);
-
-        if (auth()->user()->isKaprodi()) {
-            $myProdiId = auth()->user()->lecturer?->study_program_id;
-            $query->where('study_program_id', $myProdiId);
-        }
-
-        $query->when($request->filled('prodi') && auth()->user()->isDekan(), function ($q) use ($request) {
-            $q->where('study_program_id', $request->prodi);
-        });
-
-        $lecturers     = $query->whereHas('user', fn($u) => $u->where('is_active', true))
-                                ->orderBy('study_program_id')->get();
-        $studyPrograms = StudyProgram::orderBy('name')->get();
-
-        return view('admin.penjadwalan', compact('lecturers', 'studyPrograms'));
-    }
 }

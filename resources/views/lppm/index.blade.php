@@ -1,40 +1,6 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard LPPM Sistem Informasi Profil Dosen</title>
-    <link rel="icon" type="image/png" href="/images/logo-del.png">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config={theme:{extend:{colors:{del:{DEFAULT:'#003087',light:'#0051c3',dark:'#001f5c',50:'#eff6ff'}}}}}</script>
-</head>
-<body class="min-h-screen bg-gray-50" style="font-family:'Plus Jakarta Sans',sans-serif;">
-
-<nav class="bg-del text-white px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-        <img src="/images/logo-del.png" alt="IT Del" class="h-9" onerror="this.style.display='none'">
-        <span class="font-semibold">SIPD - Dashboard LPPM</span>
-    </div>
-    <form action="{{ route('logout') }}" method="POST">
-        @csrf
-        <button class="text-sm text-blue-100 hover:text-white">Keluar</button>
-    </form>
-</nav>
-
-<main class="max-w-6xl mx-auto px-4 py-8 space-y-6">
-
-    @if(session('success'))
-        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-            @foreach($errors->all() as $error)<p>• {{ $error }}</p>@endforeach
-        </div>
-    @endif
+@extends('layouts.lppm')
+@section('title', 'Input Tridharma')
+@section('content')
 
     <!-- Pencarian dosen -->
     <section class="bg-white rounded-2xl shadow p-6">
@@ -58,7 +24,9 @@
         </div>
     </section>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+    {{-- 3 kolom sejajar di layar besar: Penelitian | PKM | Riwayat (lebih sempit).
+         Di layar kecil tetap menumpuk vertikal (grid-cols-1). --}}
+    <div class="grid grid-cols-1 lg:grid-cols-[2fr_2fr_1.2fr] gap-4 items-start">
 
     <!-- Form Penelitian (nonaktif sampai dosen dipilih) -->
     <section class="bg-white rounded-2xl shadow p-6" id="formPenelitianSection">
@@ -74,7 +42,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="text-sm font-medium text-gray-700 block mb-1.5">Tahun</label>
-                    <input type="number" name="year" min="1970" max="{{ date('Y') }}" required
+                    <input type="number" name="year" value="{{ old('year', now()->year) }}" min="1970" max="{{ date('Y') }}" required
                            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
                 </div>
                 <div>
@@ -123,7 +91,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="text-sm font-medium text-gray-700 block mb-1.5">Tahun</label>
-                    <input type="number" name="year" min="1970" max="{{ date('Y') }}" required
+                    <input type="number" name="year" value="{{ old('year', now()->year) }}" min="1970" max="{{ date('Y') }}" required
                            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-del/30 focus:border-del">
                 </div>
                 <div>
@@ -204,16 +172,14 @@
         </form>
     </section>
 
-    </div>
-
-    <!-- Riwayat Pengisian Terakhir -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
-        <div class="bg-del px-6 py-4">
+    <!-- Riwayat Pengisian Terakhir (kolom ke-3, lebih sempit) -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-del px-5 py-4">
             <h2 class="text-white font-semibold">Riwayat Pengisian Terakhir</h2>
         </div>
         <div class="divide-y divide-gray-50">
             @forelse($riwayat as $r)
-            <div class="px-6 py-3 flex items-center justify-between gap-4">
+            <div class="px-5 py-3 flex items-center justify-between gap-3">
                 <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-800 truncate">{{ $r->judul }}</p>
                     <p class="text-xs text-gray-500">{{ $r->nama_dosen }} &middot; {{ $r->jenis }}</p>
@@ -221,15 +187,18 @@
                 <span class="text-xs text-gray-400 whitespace-nowrap">{{ $r->tanggal->diffForHumans() }}</span>
             </div>
             @empty
-            <div class="px-6 py-10 text-center text-sm text-gray-400">
+            <div class="px-5 py-10 text-center text-sm text-gray-400">
                 Belum ada data yang Anda input.
             </div>
             @endforelse
         </div>
     </div>
 
-</main>
+    </div>
 
+@endsection
+
+@push('scripts')
 <script>
 const searchInput   = document.getElementById('dosenSearchInput');
 const resultsBox    = document.getElementById('dosenSearchResults');
@@ -298,6 +267,4 @@ function clearSelectedDosen() {
     document.getElementById('hintPkm').textContent = 'Pilih dosen dulu di atas sebelum mengisi form ini.';
 }
 </script>
-
-</body>
-</html>
+@endpush

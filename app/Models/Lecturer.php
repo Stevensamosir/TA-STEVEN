@@ -68,7 +68,6 @@ class Lecturer extends Model
     public function books() { return $this->hasMany(Book::class); }
     public function hkis() { return $this->hasMany(Hki::class); }
     public function awards() { return $this->hasMany(Award::class); }
-    public function schedules() { return $this->hasMany(Schedule::class); }
 
     // === SCOPE: hanya data publik ===
     public function scopePublic($query)

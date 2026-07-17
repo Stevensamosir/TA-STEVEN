@@ -42,22 +42,10 @@ return new class extends Migration
             $table->enum('visibility', ['public', 'private'])->default('public');
             $table->timestamps();
         });
-
-        Schema::create('schedules', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('lecturer_id')->constrained('lecturers')->onDelete('cascade');
-            $table->enum('day', ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu']);
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->string('description')->nullable()->comment('keterangan');
-            $table->enum('status', ['Tersedia', 'Tidak Tersedia'])->default('Tersedia');
-            $table->timestamps();
-        });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('schedules');
         Schema::dropIfExists('awards');
         Schema::dropIfExists('hkis');
         Schema::dropIfExists('books');

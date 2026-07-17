@@ -12,7 +12,6 @@ use App\Models\Publication;
 use App\Models\Book;
 use App\Models\Hki;
 use App\Models\Award;
-use App\Models\Schedule;
 
 class DosenController extends Controller
 {
@@ -480,53 +479,6 @@ class DosenController extends Controller
         $a = Award::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id);
         $a->update(['visibility' => $a->visibility === 'public' ? 'private' : 'public']);
         return back()->with('success', 'Visibilitas berhasil diperbarui.');
-    }
-
-    // ─── JADWAL DOSEN (kalender ketersediaan pribadi, BUKAN jadwal CIS) ───
-    public function jadwal()
-    {
-        $lecturer = $this->getLecturer();
-        $jadwals  = $lecturer->schedules()
-            ->orderByRaw("CASE day
-                WHEN 'Senin' THEN 1 WHEN 'Selasa' THEN 2 WHEN 'Rabu' THEN 3
-                WHEN 'Kamis' THEN 4 WHEN 'Jumat' THEN 5 WHEN 'Sabtu' THEN 6
-                WHEN 'Minggu' THEN 7 END")
-            ->orderBy('start_time')
-            ->get();
-        return view('dosen.jadwal', compact('lecturer', 'jadwals'));
-    }
-
-    public function storeJadwal(Request $request)
-    {
-        $request->validate([
-            'day'         => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
-            'start_time'  => 'required|date_format:H:i',
-            'end_time'    => 'required|date_format:H:i|after:start_time',
-            'description' => 'nullable|string|max:255',
-            'status'      => 'required|in:Tersedia,Tidak Tersedia',
-        ]);
-        $this->getLecturer()->schedules()->create($request->only(['day','start_time','end_time','description','status']));
-        return back()->with('success', 'Jadwal berhasil ditambahkan.');
-    }
-
-    public function updateJadwal(Request $request, $id)
-    {
-        $request->validate([
-            'day'         => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
-            'start_time'  => 'required|date_format:H:i',
-            'end_time'    => 'required|date_format:H:i|after:start_time',
-            'description' => 'nullable|string|max:255',
-            'status'      => 'required|in:Tersedia,Tidak Tersedia',
-        ]);
-        Schedule::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)
-            ->update($request->only(['day','start_time','end_time','description','status']));
-        return back()->with('success', 'Jadwal berhasil diperbarui.');
-    }
-
-    public function destroyJadwal($id)
-    {
-        Schedule::where('lecturer_id', $this->getLecturer()->id)->findOrFail($id)->delete();
-        return back()->with('success', 'Jadwal berhasil dihapus.');
     }
 
     // ─── PASSWORD ────────────────────────────────────────────

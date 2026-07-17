@@ -85,12 +85,6 @@ Route::middleware(['auth', 'role:dosen,kaprodi,dekan'])->prefix('dashboard')->na
     Route::put('/penghargaan/{id}',              [DosenController::class, 'updatePenghargaan'])->name('penghargaan.update');
     Route::delete('/penghargaan/{id}',           [DosenController::class, 'destroyPenghargaan'])->name('penghargaan.destroy');
     Route::patch('/penghargaan/{id}/visibility', [DosenController::class, 'togglePenghargaanVisibility'])->name('penghargaan.visibility');
-
-    // Jadwal Dosen
-    Route::get('/jadwal',        [DosenController::class, 'jadwal'])->name('jadwal');
-    Route::post('/jadwal',       [DosenController::class, 'storeJadwal'])->name('jadwal.store');
-    Route::put('/jadwal/{id}',   [DosenController::class, 'updateJadwal'])->name('jadwal.update');
-    Route::delete('/jadwal/{id}', [DosenController::class, 'destroyJadwal'])->name('jadwal.destroy');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -122,7 +116,6 @@ Route::middleware(['auth', 'role:dekan,kaprodi'])->prefix('admin')->name('admin.
     Route::put('/profil/{id}',        [AdminController::class, 'updateProfilDosen'])->name('profil.update');
     Route::get('/laporan-tridharma',             [AdminController::class, 'laporanTridharma'])->name('laporan-tridharma');
     Route::get('/laporan-tridharma/export/pdf',  [AdminController::class, 'exportLaporanTridharmaPdf'])->name('laporan-tridharma.export.pdf');
-    Route::get('/penjadwalan',        [AdminController::class, 'penjadwalan'])->name('penjadwalan');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -134,8 +127,12 @@ Route::get('/api/doi', [DoiController::class, 'fetch'])->name('api.doi');
 // LPPM - input Penelitian & PKM dosen
 // ─────────────────────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:lppm'])->prefix('lppm')->name('lppm.')->group(function () {
-    Route::get('/',              [LPPMController::class, 'index'])->name('index');
-    Route::get('/search-dosen',  [LPPMController::class, 'searchDosen'])->name('search-dosen');
-    Route::post('/penelitian',   [LPPMController::class, 'storePenelitian'])->name('penelitian.store');
-    Route::post('/pkm',          [LPPMController::class, 'storePkm'])->name('pkm.store');
+    Route::get('/',                   [LPPMController::class, 'index'])->name('index');
+    Route::get('/search-dosen',       [LPPMController::class, 'searchDosen'])->name('search-dosen');
+    Route::get('/daftar-dosen',       [LPPMController::class, 'daftarDosen'])->name('daftar-dosen');
+    Route::get('/daftar-dosen/{id}',  [LPPMController::class, 'dosenShow'])->name('daftar-dosen.show');
+    Route::post('/penelitian',      [LPPMController::class, 'storePenelitian'])->name('penelitian.store');
+    Route::put('/penelitian/{id}',  [LPPMController::class, 'updatePenelitian'])->name('penelitian.update');
+    Route::post('/pkm',             [LPPMController::class, 'storePkm'])->name('pkm.store');
+    Route::put('/pkm/{id}',         [LPPMController::class, 'updatePkm'])->name('pkm.update');
 });
